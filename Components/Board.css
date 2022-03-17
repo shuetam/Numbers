@@ -1,0 +1,6 @@
+.board {
+    background-color: rgba(225, 225, 225, 0.61);
+    box-shadow: inset 0px 0px 15px -1px #000000;
+    border-style: solid;
+    border-width: thin;
+}
