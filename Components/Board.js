@@ -11,6 +11,7 @@ import { Dimensions } from 'react-native';
 
 const Board = (props) => {
 
+  //both must be odd
   const rows = 3;
   const columns = 3;
 
