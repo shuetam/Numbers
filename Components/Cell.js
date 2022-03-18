@@ -5,10 +5,19 @@ import './Cell.css';
 
 const Cell = (props) => {
 
-  return (
+  let content = "";
+  if(props.number == -1){
+    content = <div id = {props.id} className ={"emptyCell"}>&#128181;</div>
+  }
+  else {
 
+   let inner =  props.number == 0? "" : props.number
+   content  = <div id = {props.id} className = {props.number == 0?  "emptyCell" : "cell"}>{inner}</div>
+  }
+
+  return (
     <View>
-        <div id = {props.id} className = {props.number == 0?  "emptyCell" : "cell"}>{props.number == 0? "" : props.number}</div>
+        {content}
       </View>
   );
 }

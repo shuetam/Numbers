@@ -17,6 +17,8 @@
 
 .emptyCell {
     background-color: rgba(158, 158, 158, 0);
+    font-size: 30px;
     width: 40px;
     height: 40px;
+   text-align: center;
 }

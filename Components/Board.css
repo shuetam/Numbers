@@ -4,3 +4,11 @@
     border-style: solid;
     border-width: thin;
 }
+
+.info {
+    position: fixed;
+}
+
+.field {
+
+}

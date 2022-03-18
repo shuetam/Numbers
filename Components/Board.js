@@ -1,13 +1,9 @@
 import React from 'react';
-import { View } from 'react-native';
 import { useState } from 'react';
 import { getBoardMatrix } from '../Common/MatrixGenerator';
 import Cell from './Cell';
 import './Board.css';
-import { Dimensions } from 'react-native';
-
-
-
+import { Text, View } from 'react-native';
 
 const Board = (props) => {
 
@@ -24,6 +20,10 @@ const Board = (props) => {
   let endCell;
 
   function updateBoard() {
+
+    if (endCell.value == -1 || startCell.value == -1)
+      return;
+
 
     var updateMatrix = new Array(rows);
 
@@ -42,7 +42,7 @@ const Board = (props) => {
     if (endCell.value != 0) {
       if (startCell.value == endCell.value) {
         updateMatrix[startCell.i][startCell.j].value = 0;
-        updateMatrix[endCell.i][endCell.j].value = 0;
+        updateMatrix[endCell.i][endCell.j].value = -1;
       }
       else if (startCell.value != endCell.value) {
         updateMatrix[endCell.i][endCell.j].value = startCell.value + endCell.value;
@@ -57,7 +57,7 @@ const Board = (props) => {
     let cellsCount = 0;
     for (var i = 0; i < updateMatrix.length; i++) {
       for (var j = 0; j < updateMatrix[i].length; j++) {
-        if (updateMatrix[i][j].value != 0)
+        if (updateMatrix[i][j].value > 0)
           cellsCount++;
       }
     }
@@ -149,18 +149,19 @@ const Board = (props) => {
     return <tr>{row.map(obj => { return <td><Cell number={obj.value} id={obj.id} /></td> })} </tr>
   });
 
-  let info = "";
+  let info = ""
 
   if (cellCount == 1)
-    info = "GAME OVER!"
+    info = "GAME OVER! Tracisz wszytskie piniądze :)"
 
   if (cellCount == 0)
-    info = "GREAT JOB!!! :)"
+    info = "GREAT JOB!!! Uzbierane piniądze trafią na Twoje konto:)"
 
   return (
     <View
       onTouchStart={e => touchStart(e)}
       onTouchEnd={e => touchEnd(e)}>
+        <div className="field">
       <div className="board">
         <table>
           <tbody>
@@ -168,7 +169,8 @@ const Board = (props) => {
           </tbody>
         </table>
       </div>
-      <div> {info} </div>
+      <div  className="info">{info}</div>
+      </div>
     </View>
   );
 }

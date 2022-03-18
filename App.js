@@ -6,8 +6,8 @@ import Board from './Components/Board';
 export default function App() {
   return ( 
     <View style={styles.container}>
-      <Text>Clear this Board:</Text>
-      <Board w="3" h="3"></Board>
+      <Text>Clear this Board and collect money:</Text>
+      <Board></Board>
     </View>
   );
 }
