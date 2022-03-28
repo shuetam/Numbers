@@ -6,7 +6,7 @@ import Board from './Components/Board';
 export default function App() {
   return ( 
     <View style={styles.container}>
-      <Text>Clear this Board and collect money:</Text>
+      <Text><p>Collect money by connecting the same tiles.</p><p>If one tile left, the money from its row and column will be taken.</p><p>If you collect money in one row or column you will get great bonuses. Good luck!</p></Text>
       <Board></Board>
     </View>
   );

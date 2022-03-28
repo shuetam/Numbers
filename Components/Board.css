@@ -9,6 +9,9 @@
     position: fixed;
 }
 
+.inLineDiv {
+    display: inline;
+}
 
 .blink{
     z-index: 200;

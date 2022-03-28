@@ -8,8 +8,8 @@ import { StyleSheet, View } from 'react-native';
 const Board = (props) => {
 
   //both must be odd
-  const rows = 3;
-  const columns = 3;
+  const rows = 5;
+  const columns = 5;
 
   var matrixBoard = getBoardMatrix(columns, rows);
 
@@ -35,46 +35,43 @@ const Board = (props) => {
 
 
   let tableBody = matrix.map(row => {
-    return <tr>{row.map(obj => { return <td><Cell cells={cellCount} number={obj.value} id={obj.id} fall={obj.fall} /></td> })} </tr>
+    return <tr>{row.map(obj => { return <td><Cell cells={cellCount} number={obj.value} id={obj.id} fall={obj.fall} move={obj.move} /></td> })} </tr>
   });
 
   let info = ""
 
 
-  /*   function Animation() {
- 
-      useEffect(() => {
-       setTimeout(() => {
-         losingMoney()
-       }, 1000);
-      // return () => clearInterval(interval);
- 
-     }, []); 
- 
-     console.log("Rendering money");
-    
-     return tableBody;
-   }  */
+  function updateBoard(direct, time) {
 
+    let movedCell;
+    let cells;
+    let moveEffect = true;
 
-  function updateBoard(direct) {
+    let allCells = document.getElementsByClassName("cell");
+
+    if (allCells.length > 0) {
+
+      let data = [].map.call(allCells, elem => elem);
+      movedCell = data.find(x => x.id == startCell.id);
+
 
     if (endCell.value == 0) {
 
-      let cells;
-      switch (direct) {
-        case 'right':
-          cells = matrix[endCell.i].slice(endCell.j, columns);
-          break;
-        case 'left':
-          cells = matrix[endCell.i].slice(0, endCell.j).reverse();
-          break;
-        case 'up':
-          cells = getColumn(endCell.j).slice(0, endCell.i).reverse();
-          break;
-        case 'down':
-          cells = getColumn(endCell.j).slice(endCell.i, rows);
-          break;
+        switch (direct) {
+          case 'right':
+            cells = matrix[endCell.i].slice(endCell.j, columns);
+            break;
+          case 'left':
+            cells = matrix[endCell.i].slice(0, endCell.j).reverse();
+            break;
+          case 'up':
+            cells = getColumn(endCell.j).slice(0, endCell.i).reverse();
+            break;
+          case 'down':
+            cells = getColumn(endCell.j).slice(endCell.i, rows);
+            break;
+        }
+
       }
 
       let cellValue = endCell.value;
@@ -88,7 +85,7 @@ const Board = (props) => {
 
       }
 
-    }
+    
 
     if (endCell.value == -1 || startCell.value == -1)
       return;
@@ -109,6 +106,7 @@ const Board = (props) => {
 
     if (endCell.value != 0) {
       if (startCell.value == endCell.value) {
+
         updateMatrix[startCell.i][startCell.j].value = 0;
         updateMatrix[endCell.i][endCell.j].value = -1;
       }
@@ -122,16 +120,16 @@ const Board = (props) => {
       updateMatrix[startCell.i][startCell.j].value = 0;
     }
 
-
+    //updateMatrix[startCell.i][startCell.j].move = true;
     ///test
     ///////////////////////////////////////////////////
-/*     for (var i = 0; i < matrix.length; i++) {
-      for (var j = 0; j < matrix[i].length; j++) {
-        updateMatrix[i][j].value = -1;
-      }
-    }
-
-    updateMatrix[0][0].value = 8; */
+    /*     for (var i = 0; i < matrix.length; i++) {
+          for (var j = 0; j < matrix[i].length; j++) {
+            updateMatrix[i][j].value = -1;
+          }
+        }
+    
+        updateMatrix[0][0].value = 8; */
     ///////////////////////////////////////////////////
 
 
@@ -160,12 +158,45 @@ const Board = (props) => {
       }
     }
 
-    setLastCell(lastCell);
-    setCellCount(cellsCount);
-    setMoney(moneyCount);
-    setMatrix(updateMatrix);
+    if (moveEffect && movedCell && (direct == "right" || direct == "left")) {
+
+      time = time * 3; //time factor to tests on devices
+      let distanceHorizontal = (endCell.j - startCell.j);
+      movedCell.style.transitionProperty = "left";
+      movedCell.style.transitionDuration = time / 1000 + "s";
+      movedCell.style.left = distanceHorizontal * 40 + "px";;
+
+    }
+
+    if (moveEffect && movedCell && (direct == "up" || direct == "down")) {
+
+      // movedCell.style.position = "absolute";
+      time = time * 3; //time factor to tests on devices
+      let distanceVertical = (endCell.i - startCell.i);
+      movedCell.style.transitionProperty = "top";
+      movedCell.style.transitionDuration = time / 1000 + "s";
+      movedCell.style.top =  distanceVertical * 40 + "px"; //40px is cell
+
+    }
+
+
+
+    setTimeout(() => {
+
+      setLastCell(lastCell);
+      setCellCount(cellsCount);
+      setMoney(moneyCount);
+      setMatrix(updateMatrix);
+
+      if (moveEffect && movedCell) {
+        movedCell.style.left = "0px";
+        movedCell.style.top = "0px";
+      }
+
+    }, time);
 
   }
+}
 
 
 
@@ -186,13 +217,15 @@ const Board = (props) => {
 
   function touchEnd(e) {
 
-    /*     if(cellCount<2)
-          return; */
+    if(cellCount<2)
+        return; 
 
     const endTouchX = e.nativeEvent.changedTouches[0].clientX;
     const endTouchY = e.nativeEvent.changedTouches[0].clientY;
 
     const offsetRange = 10;
+
+    let time = Math.abs(endTouchX - startTouchX);
 
     if (Math.abs(endTouchX - startTouchX) > offsetRange) {
 
@@ -202,7 +235,7 @@ const Board = (props) => {
           return;
 
         endCell = matrix[startCell.i][startCell.j + 1];
-        updateBoard('right');
+        updateBoard('right', time);
         //right
 
       }
@@ -211,18 +244,20 @@ const Board = (props) => {
           return;
 
         endCell = matrix[startCell.i][startCell.j - 1];
-        updateBoard('left');
+        updateBoard('left', time);
         //left
       }
     }
     else if (Math.abs(endTouchY - startTouchY) > offsetRange) {
+
+      time = Math.abs(endTouchY - startTouchY);
 
       if (endTouchY > startTouchY) {
         if (startCell.i == rows - 1)
           return;
 
         endCell = matrix[startCell.i + 1][startCell.j];
-        updateBoard('down');
+        updateBoard('down', time);
         //down
       }
       else if (endTouchY < startTouchY) {
@@ -230,7 +265,7 @@ const Board = (props) => {
           return;
 
         endCell = matrix[startCell.i - 1][startCell.j];
-        updateBoard('up');
+        updateBoard('up', time);
         //up
       }
 
@@ -308,13 +343,13 @@ const Board = (props) => {
     if (lastCell.j > 0)
       leftContainer = <View style={styles.leftContainer}><div className='blink blinkLeft'></div></View>
 
-    if (lastCell.j  < columns-1)
+    if (lastCell.j < columns - 1)
       rightContainer = <View style={styles.rightContainer}><div className='blink blinkRight'></div></View>
 
     if (lastCell.i > 0)
       upContainer = <View style={styles.upContainer}><div className='blink blinkUp'></div></View>
 
-    if (lastCell.i  < rows-1)
+    if (lastCell.i < rows - 1)
       downContainer = <View style={styles.downContainer}><div className='blink blinkDown'></div></View>
 
   }

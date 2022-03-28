@@ -6,7 +6,9 @@
     font-size: 30px;
     width: 40px;
     height: 40px;
-   text-align: center;
+    text-align: center;
+    left: 0px;
+    top: 0px;
 }
 
 
@@ -33,6 +35,9 @@
     animation-delay: 0.5s;
 }
 
+
+
+
 @keyframes animateFall{
 
     0%,25%{
@@ -45,5 +50,22 @@
     }
 }
 
+
+.cellMove {
+    animation: animateMove 0.3s forwards;
+    animation-iteration-count: 1;
+
+}
+
+
+@keyframes animateMove{
+
+    0%,25%{
+        left: 0%;
+    }
+    50%,100%{
+        left: 300%;
+    }
+}
 
 

@@ -17,7 +17,7 @@ const Cell = (props) => {
     money = <div>&#128181;</div>
   }
 
- 
+
   if(props.number == -1){
     content = <div id = {props.id} className ="emptyCell">{money}</div>
   }
