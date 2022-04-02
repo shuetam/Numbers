@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@expo/metro-config": "^0.3.12",
+    "@expo/ngrok": "^4.1.0",
     "expo": "^44.0.6",
     "expo-dev-client": "^0.8.4",
     "expo-splash-screen": "~0.14.1",
@@ -17,6 +18,7 @@
     "react": "17.0.1",
     "react-dom": "17.0.1",
     "react-native": "^0.67.3",
+    "react-native-swipe-gestures": "^1.0.5",
     "react-native-web": "0.17.1",
     "uri-scheme": "^1.0.115"
   },

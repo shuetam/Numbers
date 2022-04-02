@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import {View,Text,StyleSheet} from 'react-native';
-import Board from './Components/Board';
 
 
-class App extends Component {
+class Empty extends Component {
   constructor(props) {
     super(props);
     this.state = {};
@@ -11,25 +10,22 @@ class App extends Component {
 
   componentDidMount = () => {
 
-
   };
 
   render() {
     return (
-      <View style={styles.container}>
-        <Board></Board>
-      </View>
+      <View style={styles.component}>
+        <Text>Empty Board</Text>
+        </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
-    top: 100,
+    component: {
     backgroundColor: '#ddd',
     alignItems: 'center',
-    position: 'relative'
   }
 });
 
-export default App;
+export default Empty;
