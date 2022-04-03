@@ -38,12 +38,31 @@ class Cell extends Component {
 const styles  = (props) =>  StyleSheet.create({
     
   innerCell: {
-      width: '90%',
-      height: '90%',
+      width: '92%',
+      height: '92%',
       position: 'absolute',
-      backgroundColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'rgb(2, 255, 10)',
+      backgroundColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'grey',
       justifyContent: 'center',
       alignItems: 'center',
+      borderRadius: '5%',
+
+      borderWidth: props.cell.value == 0? 0 : 0.4,
+      borderColor: 'white',
+
+      borderTopWidth: props.cell.value == 0? 0 : 0.0,
+      borderBottomWidth: props.cell.value == 0? 0 : 1,
+  
+
+      shadowColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'grey',
+      shadowOffset: {
+        width: 0,
+        height: 0,
+        
+      },
+      shadowOpacity: 0.7,
+      shadowRadius: 0,
+
+      
   },
   innerText: {
     fontSize: 30
@@ -51,84 +70,3 @@ const styles  = (props) =>  StyleSheet.create({
 }); 
 
 export default Cell;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-const Cell1 = (props) => {
-
-  let content = "";
-    let money;
-
- /*  if(props.fall)
-  {
-    money = <div className="cellFall">&#128181;</div>
-  } 
-  else
-  {
-    money = <div>&#128181;</div>
-  } */
-
-
- /*  if(props.number == -1){
-    content = <div id = {props.id} className ="emptyCell">{money}</div>
-  }
-  else {
-   let inner =  props.number == 0? "" : props.number
-   content  = <div id = {props.id} className = {props.number == 0?  "emptyCell" : "cell"}>
-     {inner}</div>
-  } */
-
-if(props.cell.value != 0)
-{
-  content = props.cell.value;
-}
-
-if(props.cell.value == -1)
-{
-  content = "$$";
-}
-
-
-  return (
-    <View nativeID={props.cell.id} style= {styles(props).innerCell}>
-        <Text nativeID={props.cell.id} style= {styles(props).innerText}>{content}</Text>
-      </View>
-  );
-}
-
-
-
-const styles1  = (props) =>  StyleSheet.create({
-    
-    innerCell: {
-        width: '90%',
-        height: '90%',
-        position: 'absolute',
-        backgroundColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'rgb(2, 255, 10)',
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    innerText: {
-      fontSize: 30
-  }
-}); 

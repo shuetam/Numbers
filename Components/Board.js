@@ -13,9 +13,9 @@ class Board extends Component {
     this.state = {
       prop: {
         columns: 5,
-        rows: 7,
-        cellWidth: 70,
-        cellHeight: 70,
+        rows: 5,
+        cellWidth: 60,
+        cellHeight: 60,
       },
       matrix: null,
       cellCount: 0,
@@ -347,7 +347,7 @@ class Board extends Component {
 const styles = (prop) => StyleSheet.create({
 
   board: {
-    backgroundColor: "#7CA1B4",
+    backgroundColor: "rgba(146, 146, 146, 0.61)",
     flex: 1,
     position: 'absolute',
     width: prop.columns * prop.cellWidth,
