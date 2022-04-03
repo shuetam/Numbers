@@ -29,43 +29,52 @@ class Cell extends Component {
 
     return (
       <View nativeID={this.props.cell.id} style= {styles(this.props).innerCell}>
+        <View nativeID={this.props.cell.id} style= {[styles(this.props).innerCell,styles(this.props).inner1Cell]}> 
           <Text nativeID={this.props.cell.id} style= {styles(this.props).innerText}>{content}</Text>
+         </View> 
         </View>
+  
     );
   }
 }
 
 const styles  = (props) =>  StyleSheet.create({
+
+  
     
   innerCell: {
-      width: '92%',
-      height: '92%',
+      width: '90%',
+      height: '85%',
       position: 'absolute',
-      backgroundColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'grey',
+      backgroundColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'rgb(255, 0, 0)',
       justifyContent: 'center',
       alignItems: 'center',
-      borderRadius: '5%',
-
-      borderWidth: props.cell.value == 0? 0 : 0.4,
-      borderColor: 'white',
-
-      borderTopWidth: props.cell.value == 0? 0 : 0.0,
-      borderBottomWidth: props.cell.value == 0? 0 : 1,
-  
-
-      shadowColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'grey',
-      shadowOffset: {
-        width: 0,
-        height: 0,
-        
-      },
-      shadowOpacity: 0.7,
-      shadowRadius: 0,
+      borderRadius: '10%',
 
       
+      shadowColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'rgb(150, 0, 0)',
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      shadowOpacity: 1,
+      shadowRadius: 0, 
   },
+  inner1Cell: {
+    width: '100%',
+    height: '98%',
+    position: 'absolute',
+    shadowColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'white',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.8,
+    shadowRadius: 1, 
+},
   innerText: {
-    fontSize: 30
+    fontSize: 30,
+    color: 'white'
 }
 }); 
 

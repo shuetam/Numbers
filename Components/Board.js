@@ -28,7 +28,6 @@ class Board extends Component {
     this.setPosition(matrixBoard);
     this.setState({ matrix: matrixBoard });
     this.setState({ cellCount: this.state.prop.columns * this.state.prop.rows - 1 });
-    alert("START");
   };
 
 
@@ -70,7 +69,7 @@ class Board extends Component {
 
     let endCell;
 
-    let speedFactor = 1; // increase to get faster cells
+    let speedFactor = 0.8; // increase to get faster cells
 
     let horizontalSpeed = speedFactor/Math.abs(gestureState.dx);
     let verticalSpeed = speedFactor/Math.abs(gestureState.dy);
