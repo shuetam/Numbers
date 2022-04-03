@@ -43,7 +43,7 @@ const styles  = (props) =>  StyleSheet.create({
       position: 'absolute',
       backgroundColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'rgb(2, 255, 10)',
       justifyContent: 'center',
-      alignItems: 'center'
+      alignItems: 'center',
   },
   innerText: {
     fontSize: 30
