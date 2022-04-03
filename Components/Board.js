@@ -5,10 +5,6 @@ import Cell from './Cell';
 import GestureRecognizer, { swipeDirections } from 'react-native-swipe-gestures';
 
 
-/* let leftAnim = new Animated.Value(0);
-let topAnim = new Animated.Value(0); */
-
-
 class Board extends Component {
 
 
@@ -17,9 +13,9 @@ class Board extends Component {
     this.state = {
       prop: {
         columns: 5,
-        rows: 5,
-        cellWidth: 50,
-        cellHeight: 50,
+        rows: 7,
+        cellWidth: 70,
+        cellHeight: 70,
       },
       matrix: null,
       cellCount: 0,
@@ -73,8 +69,11 @@ class Board extends Component {
       return;
 
     let endCell;
-    let horizontalSpeed = 4/Math.abs(gestureState.dx);
-    let verticalSpeed = 4/Math.abs(gestureState.dy);
+
+    let speedFactor = 1; // increase to get faster cells
+
+    let horizontalSpeed = speedFactor/Math.abs(gestureState.dx);
+    let verticalSpeed = speedFactor/Math.abs(gestureState.dy);
 
     if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
 
@@ -126,7 +125,7 @@ class Board extends Component {
     let cells;
     let prop = this.state.prop;
     let matrix = this.state.matrix;
-    let trip = 1;
+    let track = 1;
 
 
     if (endCell.value == 0) {
@@ -145,7 +144,7 @@ class Board extends Component {
           cells = this.getColumn(endCell.j).slice(endCell.i, prop.rows);
           break;
       }
-      trip = cells.length;
+      track = cells.length;
     }
 
     let cellValue = endCell.value;
@@ -186,12 +185,37 @@ class Board extends Component {
 
     let animatedMove = new Animated.Value(startValue);
 
-    Animated.timing(animatedMove, {
+  let duration = track > 2? track/cellSpeed : 100;
+
+    Animated.sequence([
+       Animated.timing(animatedMove, {
+        toValue: endValue,
+        useNativeDriver: false,
+        
+        easing: Easing.out(Easing.exp),
+        duration:  duration,
+      })
+    ]).start(() => {
+      this.updateValues(startCell, endCell);
+    }); 
+
+/*      Animated.spring(animatedMove, {
       toValue: endValue,
-      duration: trip/cellSpeed,
+      //friction: 1,
+      useNativeDriver: false,
+      speed: cellSpeed
     }).start(() => {
       this.updateValues(startCell, endCell);
-    });
+    });  */
+
+/*     Animated.timing(animatedMove, {
+      toValue: endValue,
+      duration: trip/cellSpeed,
+     // useNativeDriver: true,
+     //easing: Easing.bounce
+    }).start(() => {
+      this.updateValues(startCell, endCell);
+    });  */
 
     this.setState({matrix: this.state.matrix, animatedMove: animatedMove});
   }
