@@ -54,8 +54,8 @@ class Cell extends Component {
 
   onMoveEnd = (e) => {
 
-   if (this.state.valueX < this.props.prop.cellWidth / 2 || this.state.valueY < this.props.prop.cellHeight / 2)
-      this.setState({ horizontal: false, vertical: false }); 
+  /*  if (this.state.valueX < this.props.prop.cellWidth / 2 || this.state.valueY < this.props.prop.cellHeight / 2) */
+      this.setState({ horizontal: false, vertical: false });  
   }
 
 
@@ -64,6 +64,10 @@ class Cell extends Component {
     let valueX = Math.abs(this.state.panX._value);
     let valueY = Math.abs(this.state.panY._value);
 
+    if(valueX == valueY)
+    {
+      return;
+    }
 
     let onRight = this.props.cell.j == this.props.prop.columns - 1;
     let onLeft = this.props.cell.j == 0;
@@ -100,7 +104,7 @@ class Cell extends Component {
           this.props.moveCell(movedCell);
         }
       }
-    if (valueX < valueY) {
+    else {
       console.log('move!!');
       this.setState({ horizontal: false, vertical: true });
       if (valueY >= this.props.prop.cellHeight / 2) {
@@ -147,6 +151,10 @@ class Cell extends Component {
       content = "$$";
     }
 
+    if(this.props.cell.i == 0 && this.props.cell.j == 0 )
+    {
+      console.log(this.props.cell.value);
+    }
 
     return (<Animated.View onTouchEnd={(e) => this.onMoveEnd(e)} onTouchMove={(e) => this.onMove(e)} nativeID={this.props.cell.id} style={[styles(this.props).innerCell,
     {

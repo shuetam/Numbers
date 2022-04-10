@@ -247,14 +247,14 @@ console.log('receive ' + movedCell.direct)
 
     let duration = track > 2 ? track / cellSpeed : 100;
 
-    //this.setState({animatedMove: animatedMove });
+    this.setState({animatedMove: animatedMove });
     Animated.sequence([
       Animated.timing(animatedMove, {
         toValue: endValue,
         useNativeDriver: false,
 
         easing: Easing.out(Easing.exp),
-        duration: duration,
+        duration: 0,//duration,
       })
     ]).start(() => {
        this.updateValues(startCell, endCell);
@@ -280,7 +280,7 @@ console.log('receive ' + movedCell.direct)
           this.updateValues(startCell, endCell);
         });  */
 
-    this.setState({matrix: this.state.matrix, animatedMove: false });
+       // this.setState({animatedMove: animatedMove});
   }
 
 
@@ -359,7 +359,7 @@ console.log('receive ' + movedCell.direct)
 
 
     
-    this.setPosition(updateMatrix);
+    //this.setPosition(updateMatrix);
     /*     this.setState({ lastCell: lastCell });
     this.setState({ cellCount: cellsCount });
     this.setState({ money: moneyCount }); */
@@ -379,10 +379,11 @@ console.log('receive ' + movedCell.direct)
       }
     }
 
+    let animm = this.state.animatedMove;
 
     let tableBody = data.map(item => {
 
-      // let cell = <Provider store={store}><Cell cell={item} prop={prop}></Cell></Provider>;
+       //let cell = <Provider store={store}><Cell cell={item} prop={prop}></Cell></Provider>;
 
       let cell = <Cell cell={item} prop={prop}></Cell>;
 
@@ -404,10 +405,10 @@ console.log('receive ' + movedCell.direct)
           {cell}
         </View>;
 
-      /*       return <GestureRecognizer key={item.id} nativeID={item.id}
+            /*  return <GestureRecognizer key={item.id} nativeID={item.id}
              onSwipe={(direction, state) => this.onSwipe(direction, state, item)}>
              {cellBox}
-           </GestureRecognizer>   */
+           </GestureRecognizer>  */  
 
 
       /* return <View key={item.id} nativeID={item.id}>
