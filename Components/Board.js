@@ -37,6 +37,7 @@ class Board extends Component {
       matrix: matrixBoard,
       cellCount: prop.columns * prop.rows - 1,
       money: 0,
+      show: true
     };
   }
 
@@ -287,6 +288,7 @@ class Board extends Component {
 
   onMove = (e) => {
     const lll = '';
+    this.setState({show: false})
   }
 
 
@@ -387,11 +389,11 @@ class Board extends Component {
 
     let animm = this.state.animatedMove;
 
-    let tableBody = data.map(item => {
+    let tableBody = this.state.show? data.map(item => {
 
       //let cell = <Provider store={store}><Cell cell={item} prop={prop}></Cell></Provider>;
 
-      let cell = <Cell cell={item} prop={prop}></Cell>;
+      let cell = <Cell cell={item} onMove = {this.onMove} prop={prop}></Cell>;
 
       let cellBox = (item.moveHoriz == true || item.moveVert == true) ?
 
@@ -422,7 +424,7 @@ class Board extends Component {
       </View> */
       return cellBox;
 
-    });
+    }) : <Text>lalala</Text>;
 
 
     return (

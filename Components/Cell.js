@@ -185,7 +185,7 @@ class Cell extends Component {
      const panY = this.state.panY._value;
 
     return (<Animated.View /* onTouchStart={(e) => this.onMoveStart(e)}  */
-       onTouchEnd={(e) => this.onMoveEnd(e)} onTouchMove={(e) => this.onMove(e)} 
+       onTouchEnd={(e) => this.onMoveEnd(e)} onTouchMove={(e) => this.props.onMove(e)} 
      nativeID={this.props.cell.id} style={[styles(this.props).innerCell,
     {
       transform: 
