@@ -52,11 +52,13 @@ class Board extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.movedCell) {
-      let movedCell = nextProps.movedCell;
+      if ((nextProps.movedCell !== this.props.movedCell)) {
+        let movedCell = nextProps.movedCell;
 
-      const startCell = this.state.matrix[movedCell.cell.i][movedCell.cell.j];
-console.log('receive ' + movedCell.direct)
-      this.onSwipe(startCell, movedCell.direct, movedCell.gestureState);
+        const startCell = this.state.matrix[movedCell.cell.i][movedCell.cell.j];
+        console.log('receive ' + movedCell.direct)
+        this.onSwipe(startCell, movedCell.direct, movedCell.gestureState);
+      }
     }
   }
 
@@ -109,8 +111,8 @@ console.log('receive ' + movedCell.direct)
 
   onSwipe = (startCell, direct, gestureState) => {
 
-   /*  if (startCell.j == prop.columns - 1 || startCell.j == 0)
-      return; */
+    /*  if (startCell.j == prop.columns - 1 || startCell.j == 0)
+       return; */
 
     if (this.state.cellCount < 2 || !startCell)
       return;
@@ -150,36 +152,36 @@ console.log('receive ' + movedCell.direct)
     this.updateBoard(direct, startCell, endCell, speed);
 
 
-/* 
-    if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
-
-      if (gestureState.dx > 0) {
-
-        endCell = this.state.matrix[startCell.i][startCell.j + 1];
-        this.updateBoard(direct, startCell, endCell, horizontalSpeed);
-
-      }
-      else if (gestureState.dx < 0) {
-   
-        endCell = this.state.matrix[startCell.i][startCell.j - 1];
-        this.updateBoard(direct, startCell, endCell, horizontalSpeed);
-      }
-    } */
-/*     else if (Math.abs(gestureState.dx) < Math.abs(gestureState.dy)) {
-
-      if (gestureState.dy > 0) {
-      
-        endCell = this.state.matrix[startCell.i + 1][startCell.j];
-        this.updateBoard(direct, startCell, endCell, verticalSpeed);
-      }
-      else if (gestureState.dy < 0) {
-        if (startCell.i == 0)
-          return;
-
-        endCell = this.state.matrix[startCell.i - 1][startCell.j];
-        this.updateBoard(direct, startCell, endCell, verticalSpeed);
-      }
-    } */
+    /* 
+        if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
+    
+          if (gestureState.dx > 0) {
+    
+            endCell = this.state.matrix[startCell.i][startCell.j + 1];
+            this.updateBoard(direct, startCell, endCell, horizontalSpeed);
+    
+          }
+          else if (gestureState.dx < 0) {
+       
+            endCell = this.state.matrix[startCell.i][startCell.j - 1];
+            this.updateBoard(direct, startCell, endCell, horizontalSpeed);
+          }
+        } */
+    /*     else if (Math.abs(gestureState.dx) < Math.abs(gestureState.dy)) {
+    
+          if (gestureState.dy > 0) {
+          
+            endCell = this.state.matrix[startCell.i + 1][startCell.j];
+            this.updateBoard(direct, startCell, endCell, verticalSpeed);
+          }
+          else if (gestureState.dy < 0) {
+            if (startCell.i == 0)
+              return;
+    
+            endCell = this.state.matrix[startCell.i - 1][startCell.j];
+            this.updateBoard(direct, startCell, endCell, verticalSpeed);
+          }
+        } */
 
   }
 
@@ -247,7 +249,7 @@ console.log('receive ' + movedCell.direct)
 
     let duration = track > 2 ? track / cellSpeed : 100;
 
-    this.setState({animatedMove: animatedMove });
+    this.setState({ animatedMove: animatedMove });
     Animated.sequence([
       Animated.timing(animatedMove, {
         toValue: endValue,
@@ -257,7 +259,7 @@ console.log('receive ' + movedCell.direct)
         duration: 0,//duration,
       })
     ]).start(() => {
-       this.updateValues(startCell, endCell);
+      this.updateValues(startCell, endCell);
       //this.setState({matrix: upMatrix, animatedMove: animatedMove });
     });
 
@@ -280,7 +282,11 @@ console.log('receive ' + movedCell.direct)
           this.updateValues(startCell, endCell);
         });  */
 
-       // this.setState({animatedMove: animatedMove});
+    // this.setState({animatedMove: animatedMove});
+  }
+
+  onMove = (e) => {
+    const lll = '';
   }
 
 
@@ -289,18 +295,18 @@ console.log('receive ' + movedCell.direct)
 
     var updateMatrix = this.state.matrix;
 
-   /*  for (let i = 0; i < prop.rows; i++) {
-      updateMatrix[i] = new Array(prop.columns);
-    }
+    /*  for (let i = 0; i < prop.rows; i++) {
+       updateMatrix[i] = new Array(prop.columns);
+     }
+ 
+     for (var i = 0; i < this.state.matrix.length; i++) {
+       for (var j = 0; j < this.state.matrix[i].length; j++) {
+         updateMatrix[i][j] = this.state.matrix[i][j];
+       }
+     } */
 
-    for (var i = 0; i < this.state.matrix.length; i++) {
-      for (var j = 0; j < this.state.matrix[i].length; j++) {
-        updateMatrix[i][j] = this.state.matrix[i][j];
-      }
-    } */
 
 
-   
 
     if (endCell.value != 0) {
       if (startCell.value == endCell.value) {
@@ -358,12 +364,12 @@ console.log('receive ' + movedCell.direct)
     }
 
 
-    
+
     //this.setPosition(updateMatrix);
     /*     this.setState({ lastCell: lastCell });
     this.setState({ cellCount: cellsCount });
     this.setState({ money: moneyCount }); */
-    this.setState({ matrix: updateMatrix});
+    this.setState({ matrix: updateMatrix });
     //return updateMatrix;
   }
 
@@ -383,13 +389,13 @@ console.log('receive ' + movedCell.direct)
 
     let tableBody = data.map(item => {
 
-       //let cell = <Provider store={store}><Cell cell={item} prop={prop}></Cell></Provider>;
+      //let cell = <Provider store={store}><Cell cell={item} prop={prop}></Cell></Provider>;
 
       let cell = <Cell cell={item} prop={prop}></Cell>;
 
       let cellBox = (item.moveHoriz == true || item.moveVert == true) ?
 
-        <Animated.View key={item.id}  style={[styles(prop).cell,
+        <Animated.View key={item.id} style={[styles(prop).cell,
         {
           left: item.moveHoriz == true ? this.state.animatedMove : item.left,
           top: item.moveVert == true ? this.state.animatedMove : item.top
@@ -405,10 +411,10 @@ console.log('receive ' + movedCell.direct)
           {cell}
         </View>;
 
-            /*  return <GestureRecognizer key={item.id} nativeID={item.id}
-             onSwipe={(direction, state) => this.onSwipe(direction, state, item)}>
-             {cellBox}
-           </GestureRecognizer>  */  
+      /*  return <GestureRecognizer key={item.id} nativeID={item.id}
+       onSwipe={(direction, state) => this.onSwipe(direction, state, item)}>
+       {cellBox}
+     </GestureRecognizer>  */
 
 
       /* return <View key={item.id} nativeID={item.id}>
