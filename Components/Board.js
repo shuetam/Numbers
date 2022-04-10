@@ -54,7 +54,9 @@ class Board extends Component {
     if (nextProps.movedCell) {
       let movedCell = nextProps.movedCell;
 
-      this.onSwipe(movedCell.cell, movedCell.direct, movedCell.gestureState);
+      const startCell = this.state.matrix[movedCell.cell.i][movedCell.cell.j];
+console.log('receive ' + movedCell.direct)
+      this.onSwipe(startCell, movedCell.direct, movedCell.gestureState);
     }
   }
 
@@ -107,8 +109,8 @@ class Board extends Component {
 
   onSwipe = (startCell, direct, gestureState) => {
 
-    if (startCell.j == prop.columns - 1 || startCell.j == 0)
-      return;
+   /*  if (startCell.j == prop.columns - 1 || startCell.j == 0)
+      return; */
 
     if (this.state.cellCount < 2 || !startCell)
       return;
@@ -118,7 +120,7 @@ class Board extends Component {
     let speedFactor = 0.8; // increase to get faster cells
 
 
-let speed;
+    let speed;
 
     let horizontalSpeed = speedFactor / Math.abs(gestureState.dx);
     let verticalSpeed = speedFactor / Math.abs(gestureState.dy);
@@ -185,7 +187,6 @@ let speed;
   updateBoard = (direct, startCell, endCell, cellSpeed) => {
 
     let cells;
-    let prop = prop;
     let matrix = this.state.matrix;
     let track = 1;
 
@@ -246,6 +247,7 @@ let speed;
 
     let duration = track > 2 ? track / cellSpeed : 100;
 
+    //this.setState({animatedMove: animatedMove });
     Animated.sequence([
       Animated.timing(animatedMove, {
         toValue: endValue,
@@ -255,9 +257,11 @@ let speed;
         duration: duration,
       })
     ]).start(() => {
-      this.updateValues(startCell, endCell);
+       this.updateValues(startCell, endCell);
+      //this.setState({matrix: upMatrix, animatedMove: animatedMove });
     });
 
+    //this.updateValues(startCell, endCell);
     /*      Animated.spring(animatedMove, {
           toValue: endValue,
           //friction: 1,
@@ -276,7 +280,7 @@ let speed;
           this.updateValues(startCell, endCell);
         });  */
 
-    this.setState({ matrix: this.state.matrix, animatedMove: animatedMove });
+    this.setState({matrix: this.state.matrix, animatedMove: false });
   }
 
 
@@ -284,6 +288,19 @@ let speed;
   updateValues = (startCell, endCell) => {
 
     var updateMatrix = this.state.matrix;
+
+   /*  for (let i = 0; i < prop.rows; i++) {
+      updateMatrix[i] = new Array(prop.columns);
+    }
+
+    for (var i = 0; i < this.state.matrix.length; i++) {
+      for (var j = 0; j < this.state.matrix[i].length; j++) {
+        updateMatrix[i][j] = this.state.matrix[i][j];
+      }
+    } */
+
+
+   
 
     if (endCell.value != 0) {
       if (startCell.value == endCell.value) {
@@ -341,12 +358,13 @@ let speed;
     }
 
 
-
-    // this.setPosition(updateMatrix);
+    
+    this.setPosition(updateMatrix);
     /*     this.setState({ lastCell: lastCell });
-        this.setState({ cellCount: cellsCount });
-        this.setState({ money: moneyCount }); */
-    this.setState({ matrix: updateMatrix, anim: false });
+    this.setState({ cellCount: cellsCount });
+    this.setState({ money: moneyCount }); */
+    this.setState({ matrix: updateMatrix});
+    //return updateMatrix;
   }
 
 
@@ -370,7 +388,7 @@ let speed;
 
       let cellBox = (item.moveHoriz == true || item.moveVert == true) ?
 
-        <Animated.View style={[styles(prop).cell,
+        <Animated.View key={item.id}  style={[styles(prop).cell,
         {
           left: item.moveHoriz == true ? this.state.animatedMove : item.left,
           top: item.moveVert == true ? this.state.animatedMove : item.top
@@ -378,7 +396,7 @@ let speed;
           {cell}
         </Animated.View>
         :
-        <View style={[styles(prop).cell,
+        <View key={item.id} style={[styles(prop).cell,
         {
           left: item.left,
           top: item.top
@@ -392,9 +410,10 @@ let speed;
            </GestureRecognizer>   */
 
 
-      return <View key={item.id} nativeID={item.id}>
+      /* return <View key={item.id} nativeID={item.id}>
         {cellBox}
-      </View>
+      </View> */
+      return cellBox;
 
     });
 

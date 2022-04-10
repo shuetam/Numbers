@@ -40,13 +40,13 @@ class Cell extends Component {
     };
   }
 
-  componentDidMount = () => {
-
-  };
-
-  componentWillMount = () => {
-
-  }
+  /*  componentDidMount = () => {
+ 
+   };
+ 
+   componentWillMount = () => {
+ 
+   } */
 
   onTouchMove = (e) => {
     console.log(e.changedTouches[0].clientX);
@@ -54,9 +54,8 @@ class Cell extends Component {
 
   onMoveEnd = (e) => {
 
-     if (this.state.valueX < this.props.prop.cellWidth || this.state.valueY < this.props.prop.cellHeight)
-      this.setState({ horizontal: false,vertical: false });
-
+   if (this.state.valueX < this.props.prop.cellWidth / 2 || this.state.valueY < this.props.prop.cellHeight / 2)
+      this.setState({ horizontal: false, vertical: false }); 
   }
 
 
@@ -66,46 +65,68 @@ class Cell extends Component {
     let valueY = Math.abs(this.state.panY._value);
 
 
-    if (valueX > valueY) {
-      this.setState({ horizontal: true, vertical: false });
-      if(valueX >= this.props.prop.cellWidth)
-      {
-        const movedCell = {
-            cell: this.props.cell,
-            direct: this.state.panX._value > 0 ? 'SWIPE_RIGHT' : 'SWIPE_LEFT',
-            gestureState:{
-            dx: valueX,
-            dy: valueY}
-          }
-          this.props.moveCell(movedCell);
-          this.setState({ horizontal: false,vertical: false });
-      }
+    let onRight = this.props.cell.j == this.props.prop.columns - 1;
+    let onLeft = this.props.cell.j == 0;
+    let onDown = this.props.cell.i == this.props.prop.rows - 1;
+    let onTop = this.props.cell.i == 0;
+
+
+    if ((this.state.panX._value > 0 && onRight) || (this.state.panX._value < 0 && onLeft))
+    {
+      return;
     }
-    if (valueX < valueY) {
-      this.setState({ horizontal: false, vertical: true });
-      if(valueY >= this.props.prop.cellHeight)
-      {
+
+
+    if ((this.state.panY._value > 0 && onDown) || (this.state.panY._value < 0 && onTop))
+    {
+      return;
+    }
+
+
+      if (valueX > valueY) {
+        console.log('move!!');
+        this.setState({ horizontal: true, vertical: false });
+        if (valueX >= this.props.prop.cellWidth / 2) {
           const movedCell = {
             cell: this.props.cell,
-            direct: this.state.panY._value > 0 ? 'SWIPE_UP' : 'SWIPE_DOWN',
-            gestureState:{
+            direct: this.state.panX._value > 0 ? 'SWIPE_RIGHT' : 'SWIPE_LEFT',
+            gestureState: {
               dx: valueX,
-              dy: valueY}
+              dy: valueY
+            }
           }
+          this.setState({ horizontal: false, vertical: false });
+          console.log('stop move!!');
           this.props.moveCell(movedCell);
-          this.setState({ horizontal: false,vertical: false });
+        }
+      }
+    if (valueX < valueY) {
+      console.log('move!!');
+      this.setState({ horizontal: false, vertical: true });
+      if (valueY >= this.props.prop.cellHeight / 2) {
+        const movedCell = {
+          cell: this.props.cell,
+          direct: this.state.panY._value < 0 ? 'SWIPE_UP' : 'SWIPE_DOWN',
+          gestureState: {
+            dx: valueX,
+            dy: valueY
+          }
+        }
+        this.setState({ horizontal: false, vertical: false });
+        console.log('stop move!!');
+        this.props.moveCell(movedCell);
       }
     }
 
     this.setState({ valueX: valueX, valueY: valueY });
 
 
-/*     if (valueX < this.props.prop.cellWidth && this.state.horizontal)
-      this.setState({ horizontal: false });
-
-
-    if (valueY < this.props.prop.cellHeight && this.state.vertical)
-      this.setState({ vertical: false }); */
+    /*     if (valueX < this.props.prop.cellWidth && this.state.horizontal)
+          this.setState({ horizontal: false });
+    
+    
+        if (valueY < this.props.prop.cellHeight && this.state.vertical)
+          this.setState({ vertical: false }); */
 
 
 
@@ -127,14 +148,21 @@ class Cell extends Component {
     }
 
 
-    return (<Animated.View onTouchEnd={(e) => this.onMoveEnd(e)}  onTouchMove={(e) => this.onMove(e)} nativeID={this.props.cell.id} style={[styles(this.props).innerCell,
+    return (<Animated.View onTouchEnd={(e) => this.onMoveEnd(e)} onTouchMove={(e) => this.onMove(e)} nativeID={this.props.cell.id} style={[styles(this.props).innerCell,
     {
       transform: [{ translateX: this.state.horizontal ? this.state.panX : 0 }, { translateY: this.state.vertical ? this.state.panY : 0 }],
     }]}
       {...this.state.panResponder.panHandlers}>
-      <View nativeID={this.props.cell.id} style={[styles(this.props).innerCell, styles(this.props).inner1Cell]}>
-        <Text nativeID={this.props.cell.id} style={styles(this.props).innerText}>{content}</Text>
-      </View>
+      {/*     <View nativeID={this.props.cell.id} style={[styles(this.props).innerCell],
+        {
+          transform: [{ translateX: this.state.horizontal ? this.state.panX : 0 }, { translateY: this.state.vertical ? this.state.panY : 0 }],
+        }
+      
+    }
+      {...this.state.panResponder.panHandlers}
+      > */}
+      <Text nativeID={this.props.cell.id} style={styles(this.props).innerText} >{content}</Text>
+      {/*   </View> */}
     </Animated.View>);
 
 
@@ -183,7 +211,7 @@ const styles = (props) => StyleSheet.create({
     shadowColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgb(150, 0, 0)',
     shadowOffset: {
       width: 0,
-      height: 4,
+      height: 0,
     },
     shadowOpacity: 1,
     shadowRadius: 0,
