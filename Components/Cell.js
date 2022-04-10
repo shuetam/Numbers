@@ -1,81 +1,207 @@
 import React, { Component } from 'react';
-import {View,Text,StyleSheet} from 'react-native';
+import { View, Text, StyleSheet, PanResponder, Animated } from 'react-native';
+import { Provider, connect } from 'react-redux';
+import { moveCell } from '../Store/Actions';
+
 
 
 class Cell extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+
+    let pan = new Animated.ValueXY();
+    let panResponder =
+      PanResponder.create({
+        onMoveShouldSetPanResponder: () => true,
+        onPanResponderGrant: () => {
+          pan.setOffset({
+            x: pan.x._value,
+            y: pan.y._value
+          });
+        },
+        onPanResponderMove: Animated.event(
+          [
+            null,
+            { dx: pan.x, dy: pan.y }
+          ]
+        ),
+        onPanResponderRelease: () => {
+          pan.flattenOffset();
+        }
+      });
+
+
+    this.state = {
+      panX: pan.x,
+      panY: pan.y,
+      panResponder: panResponder,
+      vertical: false,
+      horizontal: false
+    };
   }
 
   componentDidMount = () => {
 
   };
 
-  
+  componentWillMount = () => {
+
+  }
+
+  onTouchMove = (e) => {
+    console.log(e.changedTouches[0].clientX);
+  }
+
+  onMoveEnd = (e) => {
+
+     if (this.state.valueX < this.props.prop.cellWidth || this.state.valueY < this.props.prop.cellHeight)
+      this.setState({ horizontal: false,vertical: false });
+
+  }
+
+
+  onMove = (e) => {
+
+    let valueX = Math.abs(this.state.panX._value);
+    let valueY = Math.abs(this.state.panY._value);
+
+
+    if (valueX > valueY) {
+      this.setState({ horizontal: true, vertical: false });
+      if(valueX >= this.props.prop.cellWidth)
+      {
+        const movedCell = {
+            cell: this.props.cell,
+            direct: this.state.panX._value > 0 ? 'SWIPE_RIGHT' : 'SWIPE_LEFT',
+            gestureState:{
+            dx: valueX,
+            dy: valueY}
+          }
+          this.props.moveCell(movedCell);
+          this.setState({ horizontal: false,vertical: false });
+      }
+    }
+    if (valueX < valueY) {
+      this.setState({ horizontal: false, vertical: true });
+      if(valueY >= this.props.prop.cellHeight)
+      {
+          const movedCell = {
+            cell: this.props.cell,
+            direct: this.state.panY._value > 0 ? 'SWIPE_UP' : 'SWIPE_DOWN',
+            gestureState:{
+              dx: valueX,
+              dy: valueY}
+          }
+          this.props.moveCell(movedCell);
+          this.setState({ horizontal: false,vertical: false });
+      }
+    }
+
+    this.setState({ valueX: valueX, valueY: valueY });
+
+
+/*     if (valueX < this.props.prop.cellWidth && this.state.horizontal)
+      this.setState({ horizontal: false });
+
+
+    if (valueY < this.props.prop.cellHeight && this.state.vertical)
+      this.setState({ vertical: false }); */
+
+
+
+    //this.props.moveCell({id: this.props.cell.id, direct: 'LEFT'})
+
+    //this.props.onMove({id: this.props.cell.id, direct: 'LEFT'});
+
+  }
+
   render() {
 
     let content = "";
-    if(this.props.cell.value != 0)
-    {
+    if (this.props.cell.value != 0) {
       content = this.props.cell.value;
     }
-    
-    if(this.props.cell.value == -1)
-    {
+
+    if (this.props.cell.value == -1) {
       content = "$$";
     }
 
 
-    return (
-      <View nativeID={this.props.cell.id} style= {styles(this.props).innerCell}>
-        <View nativeID={this.props.cell.id} style= {[styles(this.props).innerCell,styles(this.props).inner1Cell]}> 
-          <Text nativeID={this.props.cell.id} style= {styles(this.props).innerText}>{content}</Text>
-         </View> 
-        </View>
-  
-    );
+    return (<Animated.View onTouchEnd={(e) => this.onMoveEnd(e)}  onTouchMove={(e) => this.onMove(e)} nativeID={this.props.cell.id} style={[styles(this.props).innerCell,
+    {
+      transform: [{ translateX: this.state.horizontal ? this.state.panX : 0 }, { translateY: this.state.vertical ? this.state.panY : 0 }],
+    }]}
+      {...this.state.panResponder.panHandlers}>
+      <View nativeID={this.props.cell.id} style={[styles(this.props).innerCell, styles(this.props).inner1Cell]}>
+        <Text nativeID={this.props.cell.id} style={styles(this.props).innerText}>{content}</Text>
+      </View>
+    </Animated.View>);
+
+
+    /*       return (
+          <View 
+          onTouchMove={(e) => this.onSwipe(e)}
+          nativeID={this.props.cell.id} style= {styles(this.props).innerCell}>
+            <View nativeID={this.props.cell.id} style= {[styles(this.props).innerCell,styles(this.props).inner1Cell]}> 
+              <Text nativeID={this.props.cell.id} style= {styles(this.props).innerText}>{content}</Text>
+             </View> 
+            </View> 
+        ) ; */
   }
 }
 
-const styles  = (props) =>  StyleSheet.create({
 
-  
-    
+const mapStateToProps = state => {
+  return {
+    movedCell: state.reducer.movedCell,
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    moveCell: (cell) => dispatch(moveCell(cell))
+  };
+};
+
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(Cell);
+
+
+const styles = (props) => StyleSheet.create({
+
   innerCell: {
-      width: '90%',
-      height: '85%',
-      position: 'absolute',
-      backgroundColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'rgb(255, 0, 0)',
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderRadius: '10%',
+    width: '90%',
+    height: '85%',
+    position: 'absolute',
+    backgroundColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgb(255, 0, 0)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: '10%',
 
-      
-      shadowColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'rgb(150, 0, 0)',
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 0, 
+
+    shadowColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgb(150, 0, 0)',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 0,
   },
   inner1Cell: {
     width: '100%',
     height: '98%',
     position: 'absolute',
-    shadowColor: props.cell.value == 0? 'rgba(0, 0, 0, 0)' : 'white',
+    shadowColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'white',
     shadowOffset: {
       width: 0,
       height: 1,
     },
     shadowOpacity: 0.8,
-    shadowRadius: 1, 
-},
+    shadowRadius: 1,
+  },
   innerText: {
     fontSize: 30,
     color: 'white'
-}
-}); 
-
-export default Cell;
+  }
+});

@@ -3,13 +3,34 @@ import { Animated, StyleSheet, Text, View, Easing } from "react-native";
 import { getBoardMatrix } from '../Common/MatrixGenerator';
 import Cell from './Cell';
 import GestureRecognizer, { swipeDirections } from 'react-native-swipe-gestures';
+import { createStore } from 'redux';
+import reducer from '../Store/index';
+const store = createStore(reducer);
+import { Provider, connect } from 'react-redux';
+import { moveCell } from '../Store/Actions';
 
+
+const  prop = {
+  columns: 5,
+  rows: 5,
+  cellWidth: 60,
+  cellHeight: 60,
+}
 
 class Board extends Component {
 
 
   constructor(props) {
     super(props);
+
+
+ /*    var matrixBoard = getBoardMatrix(this.state.prop.columns, this.state.prop.rows);
+    this.setPosition(matrixBoard);
+    this.setState({ matrix: matrixBoard });
+    this.setState({ cellCount: this.state.prop.columns * this.state.prop.rows - 1 }); */
+
+
+
     this.state = {
       prop: {
         columns: 5,
@@ -23,15 +44,27 @@ class Board extends Component {
     };
   }
 
-  componentWillMount = () => {
-    var matrixBoard = getBoardMatrix(this.state.prop.columns, this.state.prop.rows);
+
+  /* componentWillMount = () => {
+     var matrixBoard = getBoardMatrix(this.state.prop.columns, this.state.prop.rows);
     this.setPosition(matrixBoard);
     this.setState({ matrix: matrixBoard });
-    this.setState({ cellCount: this.state.prop.columns * this.state.prop.rows - 1 });
-  };
+    this.setState({ cellCount: this.state.prop.columns * this.state.prop.rows - 1 }); 
+  }; */
 
 
-  setPosition = (matrixBoard) => {
+
+
+
+    static getDerivedStateFromProps(nextProps) {
+      var matrixBoard = getBoardMatrix(prop.columns, prop.rows);
+      this.setPosition(matrixBoard);
+      this.setState({ matrix: matrixBoard });
+      this.setState({ cellCount: prop.columns * prop.rows - 1 }); 
+      return null;
+  } 
+
+  static setPosition = (matrixBoard) => {
     for (var i = 0; i < matrixBoard.length; i++) {
       for (var j = 0; j < matrixBoard[i].length; j++) {
 
@@ -61,18 +94,23 @@ class Board extends Component {
     return column;
   }
 
+  onSwipeCell(movedCell) {
+    if (movedCell)
+      this.onSwipe(movedCell.cell, movedCell.direct, movedCell.gestureState)
+  }
 
-  onSwipe(gestureName, gestureState, startCell) {
+
+
+  onSwipe = (startCell, direct, gestureState) => {
 
     if (this.state.cellCount < 2 || !startCell)
       return;
 
-    let endCell;
 
     let speedFactor = 0.8; // increase to get faster cells
 
-    let horizontalSpeed = speedFactor/Math.abs(gestureState.dx);
-    let verticalSpeed = speedFactor/Math.abs(gestureState.dy);
+    let horizontalSpeed = speedFactor / Math.abs(gestureState.dx);
+    let verticalSpeed = speedFactor / Math.abs(gestureState.dy);
 
     if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
 
@@ -82,7 +120,7 @@ class Board extends Component {
           return;
 
         endCell = this.state.matrix[startCell.i][startCell.j + 1];
-        this.updateBoard('SWIPE_RIGHT', startCell, endCell, horizontalSpeed);
+        this.updateBoard(direct, startCell, endCell, horizontalSpeed);
 
       }
       else if (gestureState.dx < 0) {
@@ -90,7 +128,7 @@ class Board extends Component {
           return;
 
         endCell = this.state.matrix[startCell.i][startCell.j - 1];
-        this.updateBoard('SWIPE_LEFT', startCell, endCell, horizontalSpeed);
+        this.updateBoard(direct, startCell, endCell, horizontalSpeed);
       }
     }
     else if (Math.abs(gestureState.dx) < Math.abs(gestureState.dy)) {
@@ -100,16 +138,16 @@ class Board extends Component {
         if (startCell.i == this.state.prop.rows - 1)
           return;
 
-          
+
         endCell = this.state.matrix[startCell.i + 1][startCell.j];
-        this.updateBoard('SWIPE_DOWN', startCell, endCell, verticalSpeed);
+        this.updateBoard(direct, startCell, endCell, verticalSpeed);
       }
       else if (gestureState.dy < 0) {
         if (startCell.i == 0)
           return;
 
         endCell = this.state.matrix[startCell.i - 1][startCell.j];
-        this.updateBoard('SWIPE_UP', startCell, endCell, verticalSpeed);
+        this.updateBoard(direct, startCell, endCell, verticalSpeed);
       }
 
     }
@@ -125,6 +163,7 @@ class Board extends Component {
     let prop = this.state.prop;
     let matrix = this.state.matrix;
     let track = 1;
+
 
 
     if (endCell.value == 0) {
@@ -165,7 +204,7 @@ class Board extends Component {
     let endValue;
     let startValue;
 
-   
+
 
 
     if (direct == 'SWIPE_RIGHT' || direct == 'SWIPE_LEFT') {
@@ -184,39 +223,39 @@ class Board extends Component {
 
     let animatedMove = new Animated.Value(startValue);
 
-  let duration = track > 2? track/cellSpeed : 100;
+    let duration = track > 2 ? track / cellSpeed : 100;
 
     Animated.sequence([
-       Animated.timing(animatedMove, {
+      Animated.timing(animatedMove, {
         toValue: endValue,
         useNativeDriver: false,
-        
+
         easing: Easing.out(Easing.exp),
-        duration:  duration,
+        duration: duration,
       })
     ]).start(() => {
       this.updateValues(startCell, endCell);
-    }); 
+    });
 
-/*      Animated.spring(animatedMove, {
-      toValue: endValue,
-      //friction: 1,
-      useNativeDriver: false,
-      speed: cellSpeed
-    }).start(() => {
-      this.updateValues(startCell, endCell);
-    });  */
+    /*      Animated.spring(animatedMove, {
+          toValue: endValue,
+          //friction: 1,
+          useNativeDriver: false,
+          speed: cellSpeed
+        }).start(() => {
+          this.updateValues(startCell, endCell);
+        });  */
 
-/*     Animated.timing(animatedMove, {
-      toValue: endValue,
-      duration: trip/cellSpeed,
-     // useNativeDriver: true,
-     //easing: Easing.bounce
-    }).start(() => {
-      this.updateValues(startCell, endCell);
-    });  */
+    /*     Animated.timing(animatedMove, {
+          toValue: endValue,
+          duration: trip/cellSpeed,
+         // useNativeDriver: true,
+         //easing: Easing.bounce
+        }).start(() => {
+          this.updateValues(startCell, endCell);
+        });  */
 
-    this.setState({matrix: this.state.matrix, animatedMove: animatedMove});
+    this.setState({ matrix: this.state.matrix, animatedMove: animatedMove });
   }
 
 
@@ -280,7 +319,7 @@ class Board extends Component {
       }
     }
 
-    
+
 
     // this.setPosition(updateMatrix);
     /*     this.setState({ lastCell: lastCell });
@@ -304,17 +343,17 @@ class Board extends Component {
 
     let tableBody = data.map(item => {
 
-      let cell = <Cell cell={item} prop={this.state.prop}></Cell>;
+      let cell = <Provider store={store}><Cell cell={item} prop={this.state.prop}></Cell></Provider>;
 
       let cellBox = (item.moveHoriz == true || item.moveVert == true) ?
 
         <Animated.View style={[styles(this.state.prop).cell,
         {
-          left: item.moveHoriz == true? this.state.animatedMove : item.left,
-          top: item.moveVert == true? this.state.animatedMove   : item.top
+          left: item.moveHoriz == true ? this.state.animatedMove : item.left,
+          top: item.moveVert == true ? this.state.animatedMove : item.top
         }]}>
-         {cell}
-        </Animated.View> 
+          {cell}
+        </Animated.View>
         :
         <View style={[styles(this.state.prop).cell,
         {
@@ -324,15 +363,17 @@ class Board extends Component {
           {cell}
         </View>;
 
+      /*       return <GestureRecognizer key={item.id} nativeID={item.id}
+             onSwipe={(direction, state) => this.onSwipe(direction, state, item)}>
+             {cellBox}
+           </GestureRecognizer>   */
 
 
-      return <GestureRecognizer key={item.id} nativeID={item.id}
-        onSwipe={(direction, state) => this.onSwipe(direction, state, item)}>
+      return <View key={item.id} nativeID={item.id}>
         {cellBox}
-      </GestureRecognizer>
+      </View>
+
     });
-
-
 
 
     return (
@@ -342,6 +383,24 @@ class Board extends Component {
     );
   }
 }
+
+const mapStateToProps = state => {
+  return {
+    movedCell: state.reducer.movedCell,
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    moveCell: (cell) => dispatch(moveCell(cell))
+  };
+};
+
+
+
+export default connect(mapStateToProps, mapDispatchToProps)(Board);
+
+
 
 const styles = (prop) => StyleSheet.create({
 
@@ -360,5 +419,3 @@ const styles = (prop) => StyleSheet.create({
     alignItems: 'center'
   }
 });
-
-export default Board;

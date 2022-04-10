@@ -20,6 +20,8 @@
     "react-native": "^0.67.3",
     "react-native-swipe-gestures": "^1.0.5",
     "react-native-web": "0.17.1",
+    "react-redux": "^7.2.8",
+    "redux": "^4.1.2",
     "uri-scheme": "^1.0.115"
   },
   "devDependencies": {
