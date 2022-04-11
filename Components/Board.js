@@ -287,8 +287,8 @@ class Board extends Component {
   }
 
   onMove = (e) => {
-    const lll = '';
-    this.setState({show: false})
+    console.log(e.gestureState.dy);
+    this.setState({show: !this.state.show})
   }
 
 
@@ -389,11 +389,11 @@ class Board extends Component {
 
     let animm = this.state.animatedMove;
 
-    let tableBody = this.state.show? data.map(item => {
+    let tableBody =  data.map(item => {
 
       //let cell = <Provider store={store}><Cell cell={item} prop={prop}></Cell></Provider>;
 
-      let cell = <Cell cell={item} onMove = {this.onMove} prop={prop}></Cell>;
+      let cell = <Cell show={this.state.show} cell={item} onMove = {this.onMove} prop={prop}></Cell>;
 
       let cellBox = (item.moveHoriz == true || item.moveVert == true) ?
 
@@ -424,7 +424,7 @@ class Board extends Component {
       </View> */
       return cellBox;
 
-    }) : <Text>lalala</Text>;
+    });
 
 
     return (

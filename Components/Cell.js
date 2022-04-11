@@ -4,7 +4,7 @@ import { Provider, connect } from 'react-redux';
 import { moveCell } from '../Store/Actions';
 
 
-var horizontal= false; var vertical= false;
+var horizontal = false; var vertical = false;
 class Cell extends Component {
   constructor(props) {
     super(props);
@@ -28,15 +28,16 @@ class Cell extends Component {
         onPanResponderRelease: () => {
           pan.flattenOffset();
         }
-      });
+      }); 
 
 
     this.state = {
       panX: pan.x,
       panY: pan.y,
-      panResponder: panResponder,
+      panResponder: panResponder, 
       X: 0,
-      Y: 0
+      Y: 0,
+      activeMove: false
     };
   }
 
@@ -54,20 +55,23 @@ class Cell extends Component {
 
   onMoveEnd = (e) => {
 
-  /*  if (this.state.valueX < this.props.prop.cellWidth / 2 || this.state.valueY < this.props.prop.cellHeight / 2) */
-  horizontal = false; vertical = false;
-      this.setState({ horizontal: false, vertical: false });  
+    /*  if (this.state.valueX < this.props.prop.cellWidth / 2 || this.state.valueY < this.props.prop.cellHeight / 2) */
+    horizontal = false; vertical = false;
+    this.setState({ horizontal: false, vertical: false });
 
   }
 
   onMoveStart = (e) => {
 
-    /*  if (this.state.valueX < this.props.prop.cellWidth / 2 || this.state.valueY < this.props.prop.cellHeight / 2) */
-        //this.setState({ horizontal: false, vertical: false });  
-  //move = false;
-       // horizontal = false; vertical = false;
-       // this.setState({ horizontal: false, vertical: false }); 
-    }
+      this.setState({ activeMove: true,
+ 
+      });
+
+    // panX._value = 0;
+    // panY._value = 0;
+
+    //this.setState({ panX: panX, panY: panY });
+  }
 
 
   onMove = (e) => {
@@ -75,13 +79,12 @@ class Cell extends Component {
     const valueX = Math.abs(this.state.panX._value);
     const valueY = Math.abs(this.state.panY._value);
 
-    if(valueX == valueY)
-    {
+    if (valueX == valueY) {
       return;
     }
 
 
-    console.log('valueX:' + valueX + ', valueY: ' +  valueY);
+    console.log('valueX:' + valueX + ', valueY: ' + valueY);
 
     const onRight = this.props.cell.j == this.props.prop.columns - 1;
     const onLeft = this.props.cell.j == 0;
@@ -89,42 +92,42 @@ class Cell extends Component {
     const onTop = this.props.cell.i == 0;
 
 
-    if ((this.state.panX._value > 0 && onRight) || (this.state.panX._value < 0 && onLeft))
-    {
+    if ((this.state.panX._value > 0 && onRight) || (this.state.panX._value < 0 && onLeft)) {
       this.setState({ valueX: valueX, valueY: valueY });
       return;
     }
 
 
-    if ((this.state.panY._value > 0 && onDown) || (this.state.panY._value < 0 && onTop))
-    {
+    if ((this.state.panY._value > 0 && onDown) || (this.state.panY._value < 0 && onTop)) {
       this.setState({ valueX: valueX, valueY: valueY });
       return;
     }
 
 
-      if (valueX > valueY) {
-        //console.log('move!!');
-        horizontal= true; vertical= false;
-        this.setState({ horizontal: true, vertical: false });
-        if (valueX >= this.props.prop.cellWidth / 1.5) {
-          const movedCell = {
-            cell: this.props.cell,
-            direct: this.state.panX._value > 0 ? 'SWIPE_RIGHT' : 'SWIPE_LEFT',
-            gestureState: {
-              dx: valueX,
-              dy: valueY
-            }
+    if (valueX > valueY && this.state.activeMove) {
+      //console.log('move!!');
+      horizontal = true; vertical = false;
+      this.setState({ horizontal: true, vertical: false });
+      if (valueX >= this.props.prop.cellWidth / 1.5) {
+        const movedCell = {
+          cell: this.props.cell,
+          direct: this.state.panX._value > 0 ? 'SWIPE_RIGHT' : 'SWIPE_LEFT',
+          gestureState: {
+            dx: valueX,
+            dy: valueY
           }
-          horizontal = false; vertical = false;
-          this.setState({ horizontal: false, vertical: false });
-         // console.log('stop move!!');
-          this.props.moveCell(movedCell);
-          //return;
         }
+        horizontal = false; vertical = false;
+        this.setState({ horizontal: false, vertical: false });
+        // console.log('stop move!!');
+        //  this.props.moveCell(movedCell);
+     //   this.setState({ activeMove: false });
+       // this.props.onMove(movedCell);
+        //return;
       }
-      if (valueX < valueY) {
-     // console.log('move!!');
+    }
+    if (valueX < valueY && this.state.activeMove) {
+      // console.log('move!!');
       horizontal = false; vertical = true;
       this.setState({ horizontal: false, vertical: true });
       if (valueY >= this.props.prop.cellHeight / 1.5) {
@@ -138,14 +141,16 @@ class Cell extends Component {
         }
         horizontal = false; vertical = false;
         this.setState({ horizontal: false, vertical: false });
-       // console.log('stop move!!');
-        this.props.moveCell(movedCell);
+      //  this.setState({ activeMove: false });
+      //  this.props.onMove(movedCell);
+        // console.log('stop move!!');
+        //   this.props.moveCell(movedCell);
         //return;
       }
     }
 
     //horizontal = false; vertical = false;
-   // this.setState({ valueX: valueX, valueY: valueY });
+    // this.setState({ valueX: valueX, valueY: valueY });
     //this.setState({ horizontal: false, vertical: false });
 
     /*     if (valueX < this.props.prop.cellWidth && this.state.horizontal)
@@ -174,25 +179,26 @@ class Cell extends Component {
       content = "$$";
     }
 
-    if(this.props.cell.i == 0 && this.props.cell.j == 0 )
-    {
+    if (this.props.cell.i == 0 && this.props.cell.j == 0) {
       //console.log(this.props.cell.value);
     }
 
     //console.log(horizontal);
     //console.log(vertical);
-    const panX = this.state.panX._value;
-     const panY = this.state.panY._value;
+    const panX =  this.state.panX._value;
+    const panY =  this.state.panY._value;
 
-    return (<Animated.View /* onTouchStart={(e) => this.onMoveStart(e)}  */
-       onTouchEnd={(e) => this.onMoveEnd(e)} onTouchMove={(e) => this.props.onMove(e)} 
-     nativeID={this.props.cell.id} style={[styles(this.props).innerCell,
-    {
-      transform: 
-      [{ translateX: horizontal ? panX : 0 }, 
-         { translateY: vertical ? panY : 0 } ],
-    }]}
-      {...this.state.panResponder.panHandlers}>
+
+
+    return (<Animated.View onTouchStart={(e) => this.onMoveStart(e)}
+      onTouchEnd={(e) => this.onMoveEnd(e)} onTouchMove={(e) => this.onMove(e)}
+      nativeID={this.props.cell.id} style={[styles(this.props).innerCell,
+      {
+        transform:
+          [{ translateX: panX /* this.state.horizontal ? panX : 0  */},
+          { translateY: panY /* this.state.vertical ? panY : 0 */ }],
+      }]}
+      {...this.state.panResponder.panHandlers} >
       {/*     <View nativeID={this.props.cell.id} style={[styles(this.props).innerCell],
         {
           transform: [{ translateX: this.state.horizontal ? this.state.panX : 0 }, { translateY: this.state.vertical ? this.state.panY : 0 }],
@@ -248,6 +254,7 @@ const styles = (props) => StyleSheet.create({
     borderRadius: '10%',
 
 
+
     shadowColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgb(150, 0, 0)',
     shadowOffset: {
       width: 0,
@@ -270,6 +277,6 @@ const styles = (props) => StyleSheet.create({
   },
   innerText: {
     fontSize: 30,
-    color: 'white'
+    color: props.show ? 'black' : 'green',
   }
 });
