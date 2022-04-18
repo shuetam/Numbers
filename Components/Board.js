@@ -4,6 +4,7 @@ import { getBoardMatrix } from '../Common/MatrixGenerator';
 import Cell from './Cell';
 import { connect } from 'react-redux';
 import { moveCell } from '../Store/Actions';
+import { Touchable, TouchableOpacity } from "react-native-web";
 
 
 const prop = {
@@ -64,106 +65,96 @@ class Board extends Component {
   }
 
 
-  onSwipeCell = (startCell, direct, gestureState) => {
+  onMove = (startCell, direct, gestureState, speed) => {
 
-
-    if (this.state.cellCount < 2 || !startCell)
+    if (this.state.cellCount < 2 || !startCell || startCell ==  undefined)
       return;
 
-
     let endCell = null;
-    let speedFactor = 0.8; // increase to get faster cells
-
-
-    let speed;
-
-    let horizontalSpeed = speedFactor / Math.abs(gestureState.dx);
-    let verticalSpeed = speedFactor / Math.abs(gestureState.dy);
-
 
     switch (direct) {
       case 'SWIPE_RIGHT':
         endCell = this.state.matrix[startCell.i][startCell.j + 1];
-        speed = speedFactor / Math.abs(gestureState.dx);
+        //speed = speedFactor / Math.abs(gestureState.dx);
         break;
       case 'SWIPE_LEFT':
         endCell = this.state.matrix[startCell.i][startCell.j - 1];
-        speed = speedFactor / Math.abs(gestureState.dx);
+        //speed = speedFactor / Math.abs(gestureState.dx);
         break;
       case 'SWIPE_UP':
         endCell = this.state.matrix[startCell.i - 1][startCell.j];
-        speed = speedFactor / Math.abs(gestureState.dy);
+        //speed = speedFactor / Math.abs(gestureState.dy);
         break;
       case 'SWIPE_DOWN':
         endCell = this.state.matrix[startCell.i + 1][startCell.j];
-        speed = speedFactor / Math.abs(gestureState.dy);
+        //speed = speedFactor / Math.abs(gestureState.dy);
         break;
     }
 
 
-    this.updateBoard(direct, startCell, endCell, gestureState);
+    this.updateBoard(direct, startCell, endCell, gestureState, speed);
 
-    /* 
-        if (Math.abs(gestureState.dx) > Math.abs(gestureState.dy)) {
-    
-          if (gestureState.dx > 0) {
-    
-            endCell = this.state.matrix[startCell.i][startCell.j + 1];
-            this.updateBoard(direct, startCell, endCell, horizontalSpeed);
-    
-          }
-          else if (gestureState.dx < 0) {
-       
-            endCell = this.state.matrix[startCell.i][startCell.j - 1];
-            this.updateBoard(direct, startCell, endCell, horizontalSpeed);
-          }
-        } */
-    /*     else if (Math.abs(gestureState.dx) < Math.abs(gestureState.dy)) {
-    
-          if (gestureState.dy > 0) {
-          
-            endCell = this.state.matrix[startCell.i + 1][startCell.j];
-            this.updateBoard(direct, startCell, endCell, verticalSpeed);
-          }
-          else if (gestureState.dy < 0) {
-            if (startCell.i == 0)
-              return;
-    
-            endCell = this.state.matrix[startCell.i - 1][startCell.j];
-            this.updateBoard(direct, startCell, endCell, verticalSpeed);
-          }
-        } */
+  }
+
+  getTrack = (cell, direct) => {
+
+    var cells = this.getCellsForDirection(cell, direct);
+
+    if (cells.length == 0 || cell.value == -1)
+      return -1;
+
+    var cellValue = 0;
+    var track = 0;
+
+    while (cellValue == 0 && cells.length > 0) {
+      let nextCell = cells.shift();
+      cellValue = nextCell.value;
+      if (cellValue >= 0)
+        ++track;
+    }
+
+    return track;
+  }
+
+
+  getCellsForDirection = (cell, direct) => {
+    var matrix = this.state.matrix;
+    var cells;
+    switch (direct) {
+      case 'SWIPE_RIGHT':
+        cells = matrix[cell.i].slice(cell.j + 1, prop.columns);
+        break;
+      case 'SWIPE_LEFT':
+        cells = matrix[cell.i].slice(0, cell.j).reverse();
+        break;
+      case 'SWIPE_UP':
+        cells = this.getColumn(cell.j).slice(0, cell.i).reverse();
+        break;
+      case 'SWIPE_DOWN':
+        cells = this.getColumn(cell.j).slice(cell.i + 1, prop.rows);
+        break;
+    }
+
+    return cells;
 
   }
 
 
-  updateBoard = (direct, startCell, endCell, gestureState) => {
+  unfreezeCell = (cell) => {
+    cell.value = cell.frozenValue;
+    this.setState({restart: !this.state.restart});
+  }
 
-    let cells;
-    let matrix = this.state.matrix;
-    let track = 1;
 
-    if (!endCell)
+  updateBoard = (direct, startCell, endCell, gestureState, speed) => {
+
+    if (!endCell || endCell == null)
       return;
 
-      let startValue;
+    var cells;
+    let startValue;
     if (endCell.value == 0) {
-
-      switch (direct) {
-        case 'SWIPE_RIGHT':
-          cells = matrix[endCell.i].slice(endCell.j, prop.columns);
-          break;
-        case 'SWIPE_LEFT':
-          cells = matrix[endCell.i].slice(0, endCell.j).reverse();
-          break;
-        case 'SWIPE_UP':
-          cells = this.getColumn(endCell.j).slice(0, endCell.i).reverse();
-          break;
-        case 'SWIPE_DOWN':
-          cells = this.getColumn(endCell.j).slice(endCell.i, prop.rows);
-          break;
-      }
-      track = cells.length;
+      cells = this.getCellsForDirection(endCell, direct);
     }
 
     let cellValue = endCell.value;
@@ -174,7 +165,6 @@ class Board extends Component {
       cellValue = nextCell.value;
       if (cellValue >= 0)
         endCell = nextCell;
-
     }
 
 
@@ -183,8 +173,6 @@ class Board extends Component {
 
 
     let endValue;
- 
-
 
     if (direct == 'SWIPE_RIGHT' || direct == 'SWIPE_LEFT') {
       startCell.animatedHorizontal = true;
@@ -192,52 +180,25 @@ class Board extends Component {
       endValue = endCell.left;
     }
 
-
-
     if (direct == 'SWIPE_DOWN' || direct == 'SWIPE_UP') {
       startCell.animatedVertical = true;
       startValue = startCell.top + gestureState.dy;
       endValue = endCell.top;
     }
 
-   // let animatedMove = new Animated.Value(startValue);
-
-    //let duration = track > 2 ? track / cellSpeed : 100;
-
-
-
     var animatedMove = new Animated.Value(startValue);
-    
-    //let duration = track > 2 ? track / cellSpeed : 100;
+    let track = Math.abs(endValue - startValue);
+    let duration = speed == 0 ? 1000 : track / speed;
 
-
-      Animated.timing(animatedMove, {
-        toValue: endValue,
-        useNativeDriver: false,
-        easing: Easing.out(Easing.exp),
-        duration: 1500,//duration,
-      })
-    .start(() => {
-      //this.props.onAnimationEnd();
-     // alert('animatoin end');
-      this.updateValues(startCell, endCell);
-     // this.setState({restart: !this.state.restart });
-      //this.setState({matrix: upMatrix, animatedMove: animatedMove });
-    });
-
-
-    this.setState({animatedMove: animatedMove});
-
-
-
-
-
-
-
-
-
-
-
+    Animated.timing(animatedMove, {
+      toValue: endValue,
+      useNativeDriver: false,
+      easing: Easing.out(Easing.exp),
+      duration: duration,
+    })
+      .start(() => {
+        this.updateValues(startCell, endCell);
+      });
 
     this.setState({
       startCell: startCell,
@@ -248,42 +209,6 @@ class Board extends Component {
       animatedMove: animatedMove
     });
 
-/*     Animated.sequence([
-      Animated.timing(animatedMove, {
-        toValue: endValue,
-        useNativeDriver: false,
-
-        easing: Easing.out(Easing.exp),
-        duration: 500,//duration,
-      })
-    ]).start(() => {
-      this.updateValues(startCell, endCell);
-     // this.setState({restart: !this.state.restart });
-      //this.setState({matrix: upMatrix, animatedMove: animatedMove });
-    }); */
-
-    //this.updateValues(startCell, endCell);
-
-    //this.updateValues(startCell, endCell);
-    /*      Animated.spring(animatedMove, {
-          toValue: endValue,
-          //friction: 1,
-          useNativeDriver: false,
-          speed: cellSpeed
-        }).start(() => {
-          this.updateValues(startCell, endCell);
-        });  */
-
-    /*     Animated.timing(animatedMove, {
-          toValue: endValue,
-          duration: trip/cellSpeed,
-         // useNativeDriver: true,
-         //easing: Easing.bounce
-        }).start(() => {
-          this.updateValues(startCell, endCell);
-        });  */
-
-    // this.setState({animatedMove: animatedMove});
   }
 
 
@@ -297,6 +222,7 @@ class Board extends Component {
     if (endCell.value != 0) {
       if (startCell.value == endCell.value) {
 
+        updateMatrix[endCell.i][endCell.j].frozenValue = endCell.value;
         updateMatrix[startCell.i][startCell.j].value = 0;
         updateMatrix[endCell.i][endCell.j].value = -1;
       }
@@ -355,8 +281,8 @@ class Board extends Component {
     /*     this.setState({ lastCell: lastCell });
     this.setState({ cellCount: cellsCount });
     this.setState({ money: moneyCount }); */
-    this.setState({ matrix: updateMatrix,restart: !this.state.restart });
-  //  this.setState({ restart: !this.state.restart });
+    this.setState({ matrix: updateMatrix, restart: !this.state.restart });
+    //  this.setState({ restart: !this.state.restart });
     //return updateMatrix;
   }
 
@@ -368,39 +294,45 @@ class Board extends Component {
     for (var i = 0; i < this.state.matrix.length; i++) {
       for (var j = 0; j < this.state.matrix[i].length; j++) {
         let item = this.state.matrix[i][j];
+        item.leftTrack = this.getTrack(item, 'SWIPE_LEFT');
+        item.rightTrack = this.getTrack(item, 'SWIPE_RIGHT');
+        item.upTrack = this.getTrack(item, 'SWIPE_UP');
+        item.downTrack = this.getTrack(item, 'SWIPE_DOWN');
         data.push(item);
       }
     }
 
     let tableBody = data.map(item => {
 
-      let cell = <Cell 
-      restartView={this.state.restart} cell={item} 
-      onMove={this.onSwipeCell} 
-      onAnimationEnd={this.updateValues} 
-      prop={prop} 
-      animatedMove = {this.state.animatedMove}
+      let cell = <Cell
+        key={item.id}
+        restartView={this.state.restart} cell={item}
+        onMove={this.onMove}
+        onAnimationEnd={this.updateValues}
+        prop={prop}
+        animatedMove={this.state.animatedMove}
+        unfreezeCell = {this.unfreezeCell}
       >
 
       </Cell>;
 
-      let animatedCell = <Animated.View key={item.id} style={[styles(prop).cell,
-        {
-          left: item.animatedHorizontal == true ? this.state.animatedMove : item.left,
-          top: item.animatedVertical == true ? this.state.animatedMove : item.top
-        }
-        ]}>
-          {cell}
-        </Animated.View>
+      /*  let animatedCell = <Animated.View key={item.id} style={[styles(prop).cell,
+       {
+         left: item.animatedHorizontal == true ? this.state.animatedMove : item.left,
+         top: item.animatedVertical == true ? this.state.animatedMove : item.top
+       }
+       ]}>
+         {cell}
+       </Animated.View> */
 
-/*         :
-        <View key={item.id} style={[styles(prop).cell,
-        {
-          left: item.left,
-          top: item.top
-        }]}>
-          {cell}
-        </View>; */
+      /*         :
+              <View key={item.id} style={[styles(prop).cell,
+              {
+                left: item.left,
+                top: item.top
+              }]}>
+                {cell}
+              </View>; */
 
       /*  return <GestureRecognizer key={item.id} nativeID={item.id}
        onSwipe={(direction, state) => this.onSwipe(direction, state, item)}>
@@ -411,7 +343,7 @@ class Board extends Component {
       /* return <View key={item.id} nativeID={item.id}>
         {cellBox}
       </View> */
-      return  cell;
+      return cell;
 
     });
 
