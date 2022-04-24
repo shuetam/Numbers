@@ -4,7 +4,7 @@ import { getBoardMatrix } from '../Common/MatrixGenerator';
 import Cell from './Cell';
 import { connect } from 'react-redux';
 import { moveCell } from '../Store/Actions';
-import { Touchable, TouchableOpacity } from "react-native-web";
+import { getCellColor } from '../Common/ColorGenerator';
 
 
 const prop = {
@@ -28,7 +28,8 @@ class Board extends Component {
       matrix: matrixBoard,
       cellCount: prop.columns * prop.rows - 1,
       money: 0,
-      restart: true
+      restart: true,
+      colors: []
     };
   }
 
@@ -42,6 +43,7 @@ class Board extends Component {
         matrixBoard[i][j].top = this.getTop(i);
         matrixBoard[i][j].moveHoriz = false;
         matrixBoard[i][j].moveVert = false;
+        matrixBoard[i][j].colors = getCellColor(matrixBoard[i][j].value,0,0);
 
       }
     }
@@ -206,7 +208,9 @@ class Board extends Component {
       restart: !this.state.restart,
       startValue: startValue,
       endValue: endValue,
-      animatedMove: animatedMove
+      animatedMove: animatedMove,
+      colors1: startCell.colors,
+      colors2: endCell.colors,
     });
 
   }
@@ -216,6 +220,7 @@ class Board extends Component {
 
     var startCell = this.state.startCell;
     var endCell = this.state.endCell;
+    var valueUpdated = false;
 
     var updateMatrix = this.state.matrix;
 
@@ -226,15 +231,23 @@ class Board extends Component {
         updateMatrix[startCell.i][startCell.j].value = 0;
         updateMatrix[endCell.i][endCell.j].value = -1;
       }
-      else if (startCell.value != endCell.value) {
+      else if (startCell.value != endCell.value && startCell.value != 0) {
         updateMatrix[endCell.i][endCell.j].value = startCell.value + endCell.value;
         updateMatrix[startCell.i][startCell.j].value = 0;
+        valueUpdated = true;
       }
     }
     else {
       updateMatrix[endCell.i][endCell.j].value = startCell.value;
       updateMatrix[startCell.i][startCell.j].value = 0;
     }
+
+    // if(updateMatrix[startCell.i][startCell.j].value == 0)
+    //   updateMatrix[startCell.i][startCell.j].colors = getCellColor(0, this.state.colors1, this.state.colors2);
+
+    // var newCell = updateMatrix[endCell.i][endCell.j];
+    // var newValue = newCell.value < 0? newCell.frozenValue : newCell.value;
+   
 
     ///test
     ///////////////////////////////////////////////////
@@ -248,13 +261,41 @@ class Board extends Component {
     ///////////////////////////////////////////////////
 
 
+////need to update colors at any time!!!!!
+
     let cellsCount = 0;
     let moneyCount = 0;
     let lastCell;
+    var colorSeted = false;
     for (var i = 0; i < updateMatrix.length; i++) {
       for (var j = 0; j < updateMatrix[i].length; j++) {
         updateMatrix[i][j].animatedHorizontal = false;
         updateMatrix[i][j].animatedVertical = false;
+
+        var cellValue = updateMatrix[i][j].value < 0? updateMatrix[i][j].frozenValue : updateMatrix[i][j].value;
+
+        const existsColor = this.state.colors.find(x => x.value == cellValue);
+
+        const colorsState = this.state.colors;
+
+        if(existsColor)
+        {
+          updateMatrix[i][j].colors = existsColor.colors;
+        }
+        else {
+          const colors =  getCellColor(cellValue, this.state.colors1, this.state.colors2);
+          updateMatrix[i][j].colors = colors;
+
+          if(colors.newColor)
+          {
+            this.setState(prevState => ({
+              colors: [...prevState.colors, {value: cellValue, colors: colors }]
+            }))
+          }
+        }
+
+
+
         if (updateMatrix[i][j].value > 0) {
           lastCell = updateMatrix[i][j];
           cellsCount++;
@@ -275,6 +316,9 @@ class Board extends Component {
       }
     }
 
+    // if(!colorSeted && endCell.value != 0 && valueUpdated) {
+    //   newCell.colors = getCellColor(newValue, this.state.colors1, this.state.colors2);
+    // }
 
 
     //this.setPosition(updateMatrix);

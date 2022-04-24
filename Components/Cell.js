@@ -2,14 +2,13 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet, PanResponder, Animated } from 'react-native';
 import { connect } from 'react-redux';
 import { moveCell } from '../Store/Actions';
+import { BlurView } from 'expo-blur';
+
 
 
 class Cell extends Component {
   constructor(props) {
     super(props);
-
-
-
 
 
 
@@ -19,13 +18,13 @@ class Cell extends Component {
       initialLeft: props.cell.left,
       offsetTop: 0,
       offsetLeft: 0,
-/*    onRight: props.cell.j == this.props.prop.columns - 1,
-      onLeft: props.cell.j == 0,
-      onDown: props.cell.i == this.props.prop.rows - 1,
-      onTop: props.cell.i == 0, */
+      /*    onRight: props.cell.j == this.props.prop.columns - 1,
+            onLeft: props.cell.j == 0,
+            onDown: props.cell.i == this.props.prop.rows - 1,
+            onTop: props.cell.i == 0, */
       prevPosition: 0,
       prevTime: 0,
- 
+
     };
 
 
@@ -46,45 +45,45 @@ class Cell extends Component {
   }
 
 
-/*   endTouch = () => {
-    alert('end touch');
+  /*   endTouch = () => {
+      alert('end touch');
+  
+  const gestureState = this.state.gestureState;
+  
+      const d = new Date();
+      let timeEnd = d.getTime();
+  
+      let trackTime = timeEnd - this.state.touchStartTime;
+      let track = 0;
+  
+      if (this.state.horizontal)
+        track = Math.abs(gestureState.dx);
+  
+      if (this.state.vertical)
+        track = Math.abs(gestureState.dy);
+  
+      let speed = track/trackTime;
+      var direct = this.getDirect(gestureState);
+      
+      const { initialTop, initialLeft } = this.state;
+      
+      this.setState({
+        dragging: false,
+        initialTop: initialTop,
+        initialLeft: initialLeft,
+        offsetTop: 0,
+        offsetLeft: 0,
+      });
+      
+      this.props.onMove(this.props.cell, direct.direct, gestureState, speed);
+  
+    } */
 
-const gestureState = this.state.gestureState;
-
-    const d = new Date();
-    let timeEnd = d.getTime();
-
-    let trackTime = timeEnd - this.state.touchStartTime;
-    let track = 0;
-
-    if (this.state.horizontal)
-      track = Math.abs(gestureState.dx);
-
-    if (this.state.vertical)
-      track = Math.abs(gestureState.dy);
-
-    let speed = track/trackTime;
-    var direct = this.getDirect(gestureState);
-    
-    const { initialTop, initialLeft } = this.state;
-    
-    this.setState({
-      dragging: false,
-      initialTop: initialTop,
-      initialLeft: initialLeft,
-      offsetTop: 0,
-      offsetLeft: 0,
-    });
-    
-    this.props.onMove(this.props.cell, direct.direct, gestureState, speed);
-
-  } */
-
-   startTouch = () => {
+  startTouch = () => {
     let time = new Date().getTime();
-    this.setState({prevTime: time});
+    this.setState({ prevTime: time });
     //alert('touched');
-  } 
+  }
 
 
   /*   componentDidMount() {
@@ -132,33 +131,47 @@ const gestureState = this.state.gestureState;
       left: this.props.cell.animatedHorizontal == true ? this.props.animatedMove : initialLeft + offsetLeft,
     };
 
-  
+
 
     let content = "";
+    let glass;
+
     if (this.props.cell.value != 0) {
       content = this.props.cell.value;
     }
 
+    let text = <View style={[styles(this.props).innerinCell]}>
+      <Text nativeID={this.props.cell.id + ''} style={styles(this.props).innerText} >{content}</Text>
+    </View>
+
     if (this.props.cell.value == -1) {
       content = this.props.cell.frozenValue;
+      glass = <View style={[styles(this.props).glass]}><View style={[styles(this.props).glassInner]}></View></View>;
+      text = <BlurView intensity={300} style={[styles(this.props).innerinCell]}>
+        <Text nativeID={this.props.cell.id + ''} style={styles(this.props).innerText} >{content}</Text>
+      </BlurView>
     }
+
 
 
 
     return (this.props.cell.animatedHorizontal || this.props.cell.animatedVertical) ?
 
-      (<Animated.View nativeID={this.props.cell.id+''} style={[styles(this.props).cell, style]} >
+      (<Animated.View nativeID={this.props.cell.id + ''} style={[styles(this.props).cell, style]} >
         <View style={[styles(this.props).innerCell]}>
-          <Text nativeID={this.props.cell.id+''} style={styles(this.props).innerText} >{content}</Text>
+          <View style={[styles(this.props).innerinCell]}>
+            <Text nativeID={this.props.cell.id + ''} style={styles(this.props).innerText} >{content}</Text>
+          </View>
         </View>
       </Animated.View>) :
 
-      (<View 
+      (<View
         onTouchStart={this.startTouch}
-        nativeID={this.props.cell.id+''} style={[styles(this.props).cell, style]}
+        nativeID={this.props.cell.id + ''} style={[styles(this.props).cell, style]}
         {...this.panResponder.panHandlers} >
         <View style={[styles(this.props).innerCell]}>
-          <Text nativeID={this.props.cell.id+''} style={styles(this.props).innerText} >{content}</Text>
+        {glass}
+          {text}
         </View>
       </View>);
   }
@@ -196,11 +209,11 @@ const gestureState = this.state.gestureState;
 
     var positionVerify = this.checkPosition(direct, valueX, valueY);
 
-    if(positionVerify.stop && this.props.cell.value != -1)
+    if (positionVerify.stop && this.props.cell.value != -1)
       return false;
 
 
-    return {manualyMoved: positionVerify.continue, dx: dx, dy: dy, valueX: valueX, valueY: valueY, direct: direct, sectionTrack: sectionTrack };
+    return { manualyMoved: positionVerify.continue, dx: dx, dy: dy, valueX: valueX, valueY: valueY, direct: direct, sectionTrack: sectionTrack };
   }
 
 
@@ -211,47 +224,47 @@ const gestureState = this.state.gestureState;
     var widthIn = this.props.prop.cellWidth * 0.5; //0.1 - this is a  moment when cells are connected, less make delay connected
     var heightIn = this.props.prop.cellHeight * 0.5;
 
-     switch (direct) {
+    switch (direct) {
       case 'SWIPE_RIGHT'://here need to add widthEdge
-        if(this.props.cell.rightTrack <= 0 || valueX >= this.props.cell.rightTrack * this.props.prop.cellWidth - widthEdge ) {
-          this.setState({offsetLeft: widthEdge * (this.props.cell.rightTrack+2) });
-          return {continue: false, stop: true};
+        if (this.props.cell.rightTrack <= 0 || valueX >= this.props.cell.rightTrack * this.props.prop.cellWidth - widthEdge) {
+          this.setState({ offsetLeft: widthEdge * (this.props.cell.rightTrack + 2) });
+          return { continue: false, stop: true };
         }
-         else if(valueX >= this.props.cell.rightTrack * this.props.prop.cellWidth - widthIn ) {
-          return {continue: true, stop: false};
-        } 
+        else if (valueX >= this.props.cell.rightTrack * this.props.prop.cellWidth - widthIn) {
+          return { continue: true, stop: false };
+        }
         break;
       case 'SWIPE_LEFT':
-        if(this.props.cell.leftTrack <= 0 /* || valueX >= this.props.cell.leftTrack * this.props.prop.cellWidth -  widthEdge */){
-          this.setState({offsetLeft: -widthEdge * (this.props.cell.leftTrack+2)});
-          return {continue: false, stop: true};
+        if (this.props.cell.leftTrack <= 0 /* || valueX >= this.props.cell.leftTrack * this.props.prop.cellWidth -  widthEdge */) {
+          this.setState({ offsetLeft: -widthEdge * (this.props.cell.leftTrack + 2) });
+          return { continue: false, stop: true };
         }
-        else if(valueX >= this.props.cell.leftTrack * this.props.prop.cellWidth - widthIn  ) {
-          return {continue: true, stop: false};
-        } 
+        else if (valueX >= this.props.cell.leftTrack * this.props.prop.cellWidth - widthIn) {
+          return { continue: true, stop: false };
+        }
         break;
       case 'SWIPE_UP':
-        if(this.props.cell.upTrack <= 0 /* || valueY >= this.props.cell.upTrack * this.props.prop.cellHeight - heightEdge */ ){
-          this.setState({offsetTop: -heightEdge * (this.props.cell.upTrack+2) });
-          return {continue: false, stop: true};
+        if (this.props.cell.upTrack <= 0 /* || valueY >= this.props.cell.upTrack * this.props.prop.cellHeight - heightEdge */) {
+          this.setState({ offsetTop: -heightEdge * (this.props.cell.upTrack + 2) });
+          return { continue: false, stop: true };
         }
-        else if(valueY >= this.props.cell.upTrack * this.props.prop.cellHeight - heightIn ) {
-         // alert(this.props.cell.i);
-          return {continue: true, stop: false};
-        } 
+        else if (valueY >= this.props.cell.upTrack * this.props.prop.cellHeight - heightIn) {
+          // alert(this.props.cell.i);
+          return { continue: true, stop: false };
+        }
         break;
       case 'SWIPE_DOWN':
-        if(this.props.cell.downTrack <= 0 /* || valueY >= this.props.cell.downTrack * this.props.prop.cellHeight - heightEdge */ ){
-          this.setState({offsetTop: heightEdge * (this.props.cell.downTrack+2) });
-          return {continue: false, stop: true};
+        if (this.props.cell.downTrack <= 0 /* || valueY >= this.props.cell.downTrack * this.props.prop.cellHeight - heightEdge */) {
+          this.setState({ offsetTop: heightEdge * (this.props.cell.downTrack + 2) });
+          return { continue: false, stop: true };
         }
-        else if(valueY >= this.props.cell.downTrack * this.props.prop.cellHeight - heightIn  ) {
-          return {continue: true, stop: false};
-        } 
+        else if (valueY >= this.props.cell.downTrack * this.props.prop.cellHeight - heightIn) {
+          return { continue: true, stop: false };
+        }
         break;
     }
 
-    return {continue: false, stop: false};
+    return { continue: false, stop: false };
   }
 
   handlePanResponderMove = (e, gestureState) => {
@@ -259,31 +272,32 @@ const gestureState = this.state.gestureState;
     var direct = this.getDirect(gestureState);
 
     if (this.props.cell.value == 0 || this.props.cell.value == -1 || !direct)
-    return;
+      return;
 
     const time = new Date().getTime();
     const prevTime = this.state.prevTime
 
-    var sectionSpeed =  direct.sectionTrack / (time - prevTime);
-    this.setState({speed: sectionSpeed});
+    var sectionSpeed = direct.sectionTrack / (time - prevTime);
+    this.setState({ speed: sectionSpeed });
 
-       if(direct.manualyMoved) {
-        const { initialTop, initialLeft } = this.state;
-       this.setState({
-          dragging: false,
-          initialTop: initialTop,
-          initialLeft: initialLeft,
-          offsetTop: 0,
-          offsetLeft: 0,
-        }); 
-        this.props.onMove(this.props.cell, direct.direct, gestureState, 0.08);//speed from manual move
-      }
-      else {
-          this.setState({
-            offsetTop: direct.dy,
-            offsetLeft: direct.dx,
-          });
-      } 
+    if (direct.manualyMoved && this.state.dragging == true) {
+      this.finishDragging();
+      //   const { initialTop, initialLeft } = this.state;
+      //  this.setState({
+      //     dragging: false,
+      //     initialTop: initialTop,
+      //     initialLeft: initialLeft,
+      //     offsetTop: 0,
+      //     offsetLeft: 0,
+      //   }); 
+      this.props.onMove(this.props.cell, direct.direct, gestureState, 0.08);//speed from manual move
+    }
+    else {
+      this.setState({
+        offsetTop: direct.dy,
+        offsetLeft: direct.dx,
+      });
+    }
   };
 
   finishDragging = () => {
@@ -301,6 +315,9 @@ const gestureState = this.state.gestureState;
 
   handlePanResponderEnd = (e, gestureState) => {
 
+    if (this.state.dragging == false)
+      return;
+
     var direct = this.getDirect(gestureState);
 
     if (this.props.cell.value == 0 || !direct) {
@@ -311,15 +328,16 @@ const gestureState = this.state.gestureState;
     const time = new Date().getTime();
     const prevTime = this.state.prevTime
 
-    var sectionSpeed = direct.manualyMoved? 200 : direct.sectionTrack / (time - prevTime);
+    var sectionSpeed = direct.manualyMoved ? 200 : direct.sectionTrack / (time - prevTime);
 
-    if(sectionSpeed > 0.3 || sectionSpeed > this.state.speed)
+    if (sectionSpeed > 0.3 || sectionSpeed > this.state.speed && this.state.dragging == true) {
       this.props.onMove(this.props.cell, direct.direct, gestureState, sectionSpeed);
+    }
 
-      if(sectionSpeed != 0 && sectionSpeed < 0.3 && this.props.cell.value == -1)
-        this.props.unfreezeCell(this.props.cell);
+    if (sectionSpeed != 0 && sectionSpeed < 0.3 && this.props.cell.value == -1)
+      this.props.unfreezeCell(this.props.cell);
 
-      this.finishDragging();
+    this.finishDragging();
 
   };
 }
@@ -351,18 +369,46 @@ const styles = (props) => StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0)',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgb(150, 0, 0)',
   },
+
 
   innerCell: {
     width: '90%',
     height: '90%',
-    backgroundColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : (props.cell.value == -1 ? 'blue' : 'rgb(255, 0, 0)'),
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 3,
+    backgroundColor: 'rgb(' + props.cell.colors.under.join() + ')',
+    borderRadius: 5,
   },
 
+  innerinCell: {
+    width: '100%',
+    height: props.cell.value == -1 ? '100%' : '90%',
+    backgroundColor: 'rgb(' + props.cell.colors.main.join() + ')',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+    borderBottomColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgba(255, 255, 255, 0.5)',
+    borderBottomWidth: 0.5,
+    textShadowColor: props.cell.value == -1? '' : 'rgba(0, 0, 0, 0.7)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2
+  },
+
+  glass: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(255, 255, 255, 0.7 )',
+    borderRadius: 2,
+    zIndex: 10
+  },
+
+  glassInner: {
+    width: '100%',
+    height: '20%',
+    borderColor:  'rgba(255, 255, 255, 0.7)',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderWidth: 0.7,
+  },
 
   /*   inner1Cell: {
       width: '100%',
