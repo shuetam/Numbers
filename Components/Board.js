@@ -9,7 +9,7 @@ import { getCellColor } from '../Common/ColorGenerator';
 
 const prop = {
   columns: 5,
-  rows: 5,
+  rows: 7,
   cellWidth: 60,
   cellHeight: 60,
 }
@@ -144,6 +144,7 @@ class Board extends Component {
 
   unfreezeCell = (cell) => {
     cell.value = cell.frozenValue;
+    cell.canBeUnfrozen = false;
     this.setState({restart: !this.state.restart});
   }
 
@@ -273,6 +274,7 @@ class Board extends Component {
         updateMatrix[i][j].animatedVertical = false;
 
         var cellValue = updateMatrix[i][j].value < 0? updateMatrix[i][j].frozenValue : updateMatrix[i][j].value;
+        //var cellValue =  updateMatrix[i][j].value;
 
         const existsColor = this.state.colors.find(x => x.value == cellValue);
 
@@ -344,6 +346,21 @@ class Board extends Component {
         item.downTrack = this.getTrack(item, 'SWIPE_DOWN');
         data.push(item);
       }
+    }
+
+    for (var i = 0; i < data.length; i++) {
+      var cell = data[i];
+      if(cell.value == -1)
+      {
+
+        var existsCell = data.find(x => (x.i != cell.i || x.j != cell.j) && x.value == cell.frozenValue);
+        data[i].canBeUnfrozen = !existsCell;
+      /*   if(!existsCell)
+        {
+          data[i].canBeUnfrozen = true;
+        } */
+      }
+
     }
 
     let tableBody = data.map(item => {
@@ -420,7 +437,7 @@ export default connect(mapStateToProps, mapDispatchToProps)(Board);
 const styles = (prop) => StyleSheet.create({
 
   board: {
-    backgroundColor: "rgba(146, 146, 146, 0.61)",
+    backgroundColor: "rgba(146, 146, 146, 0.5)",
     flex: 1,
     position: 'absolute',
     width: prop.columns * prop.cellWidth,

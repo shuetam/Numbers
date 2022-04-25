@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet, PanResponder, Animated } from 'react-native';
 import { connect } from 'react-redux';
 import { moveCell } from '../Store/Actions';
-import { BlurView } from 'expo-blur';
+
 
 
 
@@ -131,11 +131,8 @@ class Cell extends Component {
       left: this.props.cell.animatedHorizontal == true ? this.props.animatedMove : initialLeft + offsetLeft,
     };
 
-
-
     let content = "";
-    let glass;
-
+  
     if (this.props.cell.value != 0) {
       content = this.props.cell.value;
     }
@@ -146,13 +143,10 @@ class Cell extends Component {
 
     if (this.props.cell.value == -1) {
       content = this.props.cell.frozenValue;
-      glass = <View style={[styles(this.props).glass]}><View style={[styles(this.props).glassInner]}></View></View>;
-      text = <BlurView intensity={300} style={[styles(this.props).innerinCell]}>
+      text = <View  style={[styles(this.props).innerinCell]}>
         <Text nativeID={this.props.cell.id + ''} style={styles(this.props).innerText} >{content}</Text>
-      </BlurView>
+      </View>
     }
-
-
 
 
     return (this.props.cell.animatedHorizontal || this.props.cell.animatedVertical) ?
@@ -170,7 +164,6 @@ class Cell extends Component {
         nativeID={this.props.cell.id + ''} style={[styles(this.props).cell, style]}
         {...this.panResponder.panHandlers} >
         <View style={[styles(this.props).innerCell]}>
-        {glass}
           {text}
         </View>
       </View>);
@@ -269,9 +262,12 @@ class Cell extends Component {
 
   handlePanResponderMove = (e, gestureState) => {
 
+    if (this.props.cell.value == 0 || (this.props.cell.value == -1 && !this.props.cell.canBeUnfrozen))
+      return;
+
     var direct = this.getDirect(gestureState);
 
-    if (this.props.cell.value == 0 || this.props.cell.value == -1 || !direct)
+    if ( this.props.cell.value == -1 || !direct)
       return;
 
     const time = new Date().getTime();
@@ -315,7 +311,7 @@ class Cell extends Component {
 
   handlePanResponderEnd = (e, gestureState) => {
 
-    if (this.state.dragging == false)
+    if (this.state.dragging == false || (!this.props.cell.canBeUnfrozen && this.props.cell.value == -1))
       return;
 
     var direct = this.getDirect(gestureState);
@@ -334,7 +330,7 @@ class Cell extends Component {
       this.props.onMove(this.props.cell, direct.direct, gestureState, sectionSpeed);
     }
 
-    if (sectionSpeed != 0 && sectionSpeed < 0.3 && this.props.cell.value == -1)
+    if (sectionSpeed != 0 && sectionSpeed < 0.2 && this.props.cell.value == -1)
       this.props.unfreezeCell(this.props.cell);
 
     this.finishDragging();
@@ -366,49 +362,36 @@ const styles = (props) => StyleSheet.create({
     width: props.prop.cellWidth,
     height: props.prop.cellHeight,
     position: 'absolute',
-    backgroundColor: 'rgba(0, 0, 0, 0)',
+    backgroundColor:  'rgba(0, 0, 0, 0)',
     justifyContent: 'center',
     alignItems: 'center',
+
   },
 
 
   innerCell: {
-    width: '90%',
-    height: '90%',
-    backgroundColor: 'rgb(' + props.cell.colors.under.join() + ')',
+    width:  props.cell.value == -1? '95%' : '90%',
+    height: props.cell.value == -1? '95%' : '90%',
+    backgroundColor: props.cell.value == -1 ? 'rgba(146, 146, 146, 0.3)' : 'rgb(' + props.cell.colors.under.join() + ')',
     borderRadius: 5,
+    borderColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgba(0, 0, 0, 0.3)',
+    borderWidth: props.cell.canBeUnfrozen? 0.3 : 0
   },
 
   innerinCell: {
     width: '100%',
     height: props.cell.value == -1 ? '100%' : '90%',
-    backgroundColor: 'rgb(' + props.cell.colors.main.join() + ')',
+    backgroundColor: props.cell.value == -1 ? 'rgba(0, 0, 0, 0)' : 'rgb(' + props.cell.colors.main.join() + ')',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
-    borderBottomColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgba(255, 255, 255, 0.5)',
-    borderBottomWidth: 0.5,
-    textShadowColor: props.cell.value == -1? '' : 'rgba(0, 0, 0, 0.7)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2
+    borderColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : props.cell.value == -1 ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)',
+    borderWidth: props.cell.value == -1? 2 : 0.5,
+    // textShadowColor: props.cell.value == -1? '' : 'rgba(0, 0, 0, 0.7)',
+    // textShadowOffset: { width: 1, height: 1 },
+    // textShadowRadius: 2
   },
 
-  glass: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(255, 255, 255, 0.7 )',
-    borderRadius: 2,
-    zIndex: 10
-  },
-
-  glassInner: {
-    width: '100%',
-    height: '20%',
-    borderColor:  'rgba(255, 255, 255, 0.7)',
-    backgroundColor: 'rgba(255, 255, 255, 0.4)',
-    borderWidth: 0.7,
-  },
 
   /*   inner1Cell: {
       width: '100%',
@@ -424,6 +407,7 @@ const styles = (props) => StyleSheet.create({
     }, */
   innerText: {
     fontSize: 30,
-    color: 'white',
+    color: props.cell.value == -1 && props.cell.canBeUnfrozen ? 'rgb(' + props.cell.colors.main.join() + ')' : 'rgba(225, 225, 225, 1)',
+    //color:  'rgba(225, 225, 225, 1)',
   }
 });

@@ -14,9 +14,9 @@
 
 .cell:hover {
     cursor: pointer;
-    background-color: rgb(255, 18, 18, 0.481);
+    background-color: rgb(146, 146, 146);
     z-index: 160;
-    box-shadow: 0px 0px 2px 3px rgba(255, 255, 255, 0.707);
+    box-shadow: 0px 0px 2px 3px rgba(0, 0, 0, 0.624);
 }
 
 .emptyCell {

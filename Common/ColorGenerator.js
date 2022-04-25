@@ -1,7 +1,7 @@
 const cellColors = [
     { main: [0, 0, 0, 0], under: [0, 0, 0, 0] }, //0
     { main: [255, 50, 50], under: [230, 30, 10] }, //1
-    { main: [255,100,70], under: [230, 70, 35] }, //2
+    { main: [255, 100, 70], under: [230, 70, 35] }, //2
     { main: [155, 60, 70], under: [120, 40, 70] }, //3
     { main: [0, 170, 180], under: [0, 130, 140] }, //4
     { main: [75, 75, 255], under: [60, 50, 255] }, //5
@@ -15,15 +15,16 @@ const cellColors = [
 export function getCellColor(value, color1, color2) {
 
 
+
     if (value < cellColors.length) {
 
         return cellColors[value];
     }
     else {
-        return { 
+        return {
 
-            main: [(color1.main[0] + color2.main[0])/2, (color1.main[1] + color2.main[1])/2, (color1.main[2] + color2.main[2])/2 ], 
-            under: [(color1.under[0] + color2.under[0])/2, (color1.under[1] + color2.under[1])/2, (color1.under[2] + color2.under[2])/2 ],
+            main: [(color1.main[0] + color2.main[0]) / 2, (color1.main[1] + color2.main[1]) / 2, (color1.main[2] + color2.main[2]) / 2],
+            under: [(color1.under[0] + color2.under[0]) / 2, (color1.under[1] + color2.under[1]) / 2, (color1.under[2] + color2.under[2]) / 2],
             newColor: true
         };
 
