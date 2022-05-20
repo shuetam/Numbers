@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
-import { View, Text, StyleSheet, PanResponder, Animated } from 'react-native';
+import { View, Text, StyleSheet, PanResponder, Animated, Easing } from 'react-native';
 import { connect } from 'react-redux';
 import { moveCell } from '../Store/Actions';
-
 
 
 
@@ -131,22 +130,67 @@ class Cell extends Component {
       left: this.props.cell.animatedHorizontal == true ? this.props.animatedMove : initialLeft + offsetLeft,
     };
 
+
+
     let content = "";
-  
+
     if (this.props.cell.value != 0) {
       content = this.props.cell.value;
     }
+
+    if (this.props.cell.value == -1) {
+      content = this.props.cell.frozenValue;
+    }
+
+
 
     let text = <View style={[styles(this.props).innerinCell]}>
       <Text nativeID={this.props.cell.id + ''} style={styles(this.props).innerText} >{content}</Text>
     </View>
 
-    if (this.props.cell.value == -1) {
-      content = this.props.cell.frozenValue;
-      text = <View  style={[styles(this.props).innerinCell]}>
-        <Text nativeID={this.props.cell.id + ''} style={styles(this.props).innerText} >{content}</Text>
+    if (this.props.cell.bounce && this.props.points > 0) {
+
+     /*  var moveAnimation = new Animated.Value(50);
+      Animated.timing(moveAnimation, {
+        toValue: 0,
+        duration: 400,
+      }).start();
+
+      var opacityAnimation = new Animated.Value(1);
+      Animated.timing(opacityAnimation, {
+        toValue: 0,
+        duration: 300,
+      }).start(); */
+
+      var bounceAnimation = new Animated.Value(45);
+      Animated.timing(bounceAnimation, {
+        toValue: 30,
+        duration: 700,
+        easing: Easing.bounce
+      }).start();
+
+      const styleBounce = {
+        fontSize: bounceAnimation,
+      }
+
+      const styleColor = {
+        borderWidth: 0
+      }
+
+      text = <View style={[styles(this.props).innerinCell, styleColor]}>
+        <Animated.Text nativeID={this.props.cell.id + ''} style={[styles(this.props).innerText, styleBounce]} >{content}</Animated.Text>
+        {/* <Animated.View style={styleShine}></Animated.View> */}
       </View>
+
     }
+
+    /*     if (this.props.cell.value == -1) {
+          content = this.props.cell.frozenValue;
+          text = <View  style={[styles(this.props).innerinCell]}>
+            <Text nativeID={this.props.cell.id + ''} style={styles(this.props).innerText} >{content}</Text>
+          </View>
+        } */
+
 
 
     return (this.props.cell.animatedHorizontal || this.props.cell.animatedVertical) ?
@@ -210,12 +254,16 @@ class Cell extends Component {
   }
 
 
+
+
+
+
   checkPosition = (direct, valueX, valueY) => {
 
     var widthEdge = this.props.prop.cellWidth * 0.05; // 10% is a size of cell
     var heightEdge = this.props.prop.cellHeight * 0.05;
-    var widthIn = this.props.prop.cellWidth * 0.5; //0.1 - this is a  moment when cells are connected, less make delay connected
-    var heightIn = this.props.prop.cellHeight * 0.5;
+    var widthIn = this.props.prop.cellWidth * 0.3; // - this is a  moment when cells are connected, less make delay connected
+    var heightIn = this.props.prop.cellHeight * 0.3;
 
     switch (direct) {
       case 'SWIPE_RIGHT'://here need to add widthEdge
@@ -228,7 +276,7 @@ class Cell extends Component {
         }
         break;
       case 'SWIPE_LEFT':
-        if (this.props.cell.leftTrack <= 0 /* || valueX >= this.props.cell.leftTrack * this.props.prop.cellWidth -  widthEdge */) {
+        if (this.props.cell.leftTrack <= 0 /* || valueX >= this.props.cell.leftTrack * this.props.prop.cellWidth -  widthEdge */) { 
           this.setState({ offsetLeft: -widthEdge * (this.props.cell.leftTrack + 2) });
           return { continue: false, stop: true };
         }
@@ -267,7 +315,7 @@ class Cell extends Component {
 
     var direct = this.getDirect(gestureState);
 
-    if ( this.props.cell.value == -1 || !direct)
+    if (this.props.cell.value == -1 || !direct)
       return;
 
     const time = new Date().getTime();
@@ -286,7 +334,8 @@ class Cell extends Component {
       //     offsetTop: 0,
       //     offsetLeft: 0,
       //   }); 
-      this.props.onMove(this.props.cell, direct.direct, gestureState, 0.08);//speed from manual move
+      var manualSpeed = 0.5;
+      this.props.onMove(this.props.cell, direct.direct, gestureState, manualSpeed);//speed from manual move
     }
     else {
       this.setState({
@@ -324,9 +373,9 @@ class Cell extends Component {
     const time = new Date().getTime();
     const prevTime = this.state.prevTime
 
-    var sectionSpeed = direct.manualyMoved ? 200 : direct.sectionTrack / (time - prevTime);
+    var sectionSpeed = direct.manualyMoved ? 0.5 : direct.sectionTrack / (time - prevTime);
 
-    if (sectionSpeed > 0.3 || sectionSpeed > this.state.speed && this.state.dragging == true) {
+    if (sectionSpeed > 0.3 || sectionSpeed > this.state.speed && this.state.dragging == true && this.props.cell.value != -1) {
       this.props.onMove(this.props.cell, direct.direct, gestureState, sectionSpeed);
     }
 
@@ -341,13 +390,13 @@ class Cell extends Component {
 
 const mapStateToProps = state => {
   return {
-    movedCell: state.reducer.movedCell,
+    //movedCell: state.reducer.movedCell,
   };
 };
 
 const mapDispatchToProps = dispatch => {
   return {
-    moveCell: (cell) => dispatch(moveCell(cell))
+    //moveCell: (cell) => dispatch(moveCell(cell))
   };
 };
 
@@ -362,52 +411,41 @@ const styles = (props) => StyleSheet.create({
     width: props.prop.cellWidth,
     height: props.prop.cellHeight,
     position: 'absolute',
-    backgroundColor:  'rgba(0, 0, 0, 0)',
+    backgroundColor: 'rgba(0, 0, 0, 0)',
     justifyContent: 'center',
     alignItems: 'center',
 
   },
 
+  pointScore: {
+    position: 'absolute',
+    // left: props.cell.left,
+    // top: props.cell.top
+  },
 
   innerCell: {
-    width:  props.cell.value == -1? '95%' : '90%',
-    height: props.cell.value == -1? '95%' : '90%',
-    backgroundColor: props.cell.value == -1 ? 'rgba(146, 146, 146, 0.3)' : 'rgb(' + props.cell.colors.under.join() + ')',
+    width: props.cell.value == -1 ? '95%' : '90%',
+    height: props.cell.value == -1 ? '95%' : '90%',
+    backgroundColor: props.cell.value == -1 ? 'rgba(146, 146, 146, 0.3)' : (props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgb(' + props.cell.colors.under.join() + ')'),
     borderRadius: 5,
     borderColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgba(0, 0, 0, 0.3)',
-    borderWidth: props.cell.canBeUnfrozen? 0.3 : 0
+    borderWidth: props.cell.value == -1 ? (props.cell.canBeUnfrozen ? 0.5 : 0) : 0.3
   },
 
   innerinCell: {
     width: '100%',
-    height: props.cell.value == -1 ? '100%' : '90%',
-    backgroundColor: props.cell.value == -1 ? 'rgba(0, 0, 0, 0)' : 'rgb(' + props.cell.colors.main.join() + ')',
+    height: props.cell.value == -1 ? '100%' : '93%',
+    backgroundColor: props.cell.value == -1 ? 'rgba(0, 0, 0, 0)' : 'rgba(' + props.cell.colors.main.join() + ')',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
     borderColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : props.cell.value == -1 ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)',
-    borderWidth: props.cell.value == -1? 2 : 0.5,
-    // textShadowColor: props.cell.value == -1? '' : 'rgba(0, 0, 0, 0.7)',
-    // textShadowOffset: { width: 1, height: 1 },
-    // textShadowRadius: 2
+    borderWidth: props.cell.value == -1 ? 2 : 0.5,
   },
-
-
-  /*   inner1Cell: {
-      width: '100%',
-      height: '98%',
-      position: 'absolute',
-      shadowColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'white',
-      shadowOffset: {
-        width: 0,
-        height: 1,
-      },
-      shadowOpacity: 0.8,
-      shadowRadius: 1,
-    }, */
   innerText: {
     fontSize: 30,
     color: props.cell.value == -1 && props.cell.canBeUnfrozen ? 'rgb(' + props.cell.colors.main.join() + ')' : 'rgba(225, 225, 225, 1)',
-    //color:  'rgba(225, 225, 225, 1)',
+    //fontFamily: 'Robot', 
+    //  fontWeight: 500
   }
 });

@@ -2,6 +2,7 @@ import React, { Component, useEffect } from "react";
 import { Animated, StyleSheet, Text, View, Easing } from "react-native";
 import { getBoardMatrix } from '../Common/MatrixGenerator';
 import Cell from './Cell';
+import TopPanel from './TopPanel';
 import { connect } from 'react-redux';
 import { moveCell } from '../Store/Actions';
 import { getCellColor } from '../Common/ColorGenerator';
@@ -9,10 +10,12 @@ import { getCellColor } from '../Common/ColorGenerator';
 
 const prop = {
   columns: 5,
-  rows: 7,
+  rows: 5,
   cellWidth: 60,
   cellHeight: 60,
 }
+
+let scores = 0;
 
 class Board extends Component {
 
@@ -20,19 +23,30 @@ class Board extends Component {
   constructor(props) {
     super(props);
 
-
-    var matrixBoard = getBoardMatrix(prop.columns, prop.rows);
-    this.setPosition(matrixBoard);
+    var matrixBoard = this.generateMatrix();
 
     this.state = {
       matrix: matrixBoard,
       cellCount: prop.columns * prop.rows - 1,
       money: 0,
       restart: true,
-      colors: []
-    };
+      colors: [],
+      scores: 0
+    }
   }
 
+  generateMatrix = () => {
+    var matrixBoard = getBoardMatrix(prop.columns, prop.rows);
+    this.setPosition(matrixBoard);
+    return matrixBoard;
+  }
+
+
+  restartBoard = () => {
+
+    this.setState({ matrix: this.generateMatrix(), points: 0, scores: 0 });
+
+  }
 
 
   setPosition = (matrixBoard) => {
@@ -43,7 +57,9 @@ class Board extends Component {
         matrixBoard[i][j].top = this.getTop(i);
         matrixBoard[i][j].moveHoriz = false;
         matrixBoard[i][j].moveVert = false;
-        matrixBoard[i][j].colors = getCellColor(matrixBoard[i][j].value,0,0);
+        //test
+        //matrixBoard[i][j].value = 2;
+        matrixBoard[i][j].colors = getCellColor(matrixBoard[i][j].value, 0, 0);
 
       }
     }
@@ -69,26 +85,30 @@ class Board extends Component {
 
   onMove = (startCell, direct, gestureState, speed) => {
 
-    if (this.state.cellCount < 2 || !startCell || startCell ==  undefined)
+    if (this.state.cellCount < 2 || !startCell || startCell == undefined)
       return;
 
     let endCell = null;
 
     switch (direct) {
       case 'SWIPE_RIGHT':
-        endCell = this.state.matrix[startCell.i][startCell.j + 1];
+        if (startCell.j < prop.columns - 1)
+          endCell = this.state.matrix[startCell.i][startCell.j + 1];
         //speed = speedFactor / Math.abs(gestureState.dx);
         break;
       case 'SWIPE_LEFT':
-        endCell = this.state.matrix[startCell.i][startCell.j - 1];
+        if (startCell.j > 0)
+          endCell = this.state.matrix[startCell.i][startCell.j - 1];
         //speed = speedFactor / Math.abs(gestureState.dx);
         break;
       case 'SWIPE_UP':
-        endCell = this.state.matrix[startCell.i - 1][startCell.j];
+        if (startCell.i > 0)
+          endCell = this.state.matrix[startCell.i - 1][startCell.j];
         //speed = speedFactor / Math.abs(gestureState.dy);
         break;
       case 'SWIPE_DOWN':
-        endCell = this.state.matrix[startCell.i + 1][startCell.j];
+        if (startCell.i < prop.rows - 1)
+          endCell = this.state.matrix[startCell.i + 1][startCell.j];
         //speed = speedFactor / Math.abs(gestureState.dy);
         break;
     }
@@ -145,7 +165,7 @@ class Board extends Component {
   unfreezeCell = (cell) => {
     cell.value = cell.frozenValue;
     cell.canBeUnfrozen = false;
-    this.setState({restart: !this.state.restart});
+    this.setState({ restart: !this.state.restart });
   }
 
 
@@ -191,7 +211,7 @@ class Board extends Component {
 
     var animatedMove = new Animated.Value(startValue);
     let track = Math.abs(endValue - startValue);
-    let duration = speed == 0 ? 1000 : track / speed;
+    let duration = speed == 0 ? 500 : track / speed;
 
     Animated.timing(animatedMove, {
       toValue: endValue,
@@ -203,6 +223,7 @@ class Board extends Component {
         this.updateValues(startCell, endCell);
       });
 
+
     this.setState({
       startCell: startCell,
       endCell: endCell,
@@ -212,43 +233,203 @@ class Board extends Component {
       animatedMove: animatedMove,
       colors1: startCell.colors,
       colors2: endCell.colors,
+      points: 0
     });
 
   }
 
+  getNeighbors(updateMatrix, i, j, neighbors) {
+    //var neighborsCount = 0;
+    var mainValue = updateMatrix[i][j].frozenValue;
+    //var neighbors = [];
+
+    if (i > 0) {
+      if (updateMatrix[i - 1][j].frozenValue == mainValue) {
+
+        if (!updateMatrix[i - 1][j].bounce) {
+          updateMatrix[i - 1][j].bounce = true;
+          neighbors.push(updateMatrix[i - 1][j]);
+          this.getNeighbors(updateMatrix, i - 1, j, neighbors);
+        }
+      }
+    }
+
+    if (j > 0) {
+      if (updateMatrix[i][j - 1].frozenValue == mainValue) {
+
+        if (!updateMatrix[i][j - 1].bounce) {
+          updateMatrix[i][j - 1].bounce = true;
+          neighbors.push(updateMatrix[i][j - 1]);
+          this.getNeighbors(updateMatrix, i, j - 1, neighbors);
+        }
+      }
+    }
+
+    if (i < prop.rows - 1) {
+      if (updateMatrix[i + 1][j].frozenValue == mainValue) {
+
+        if (!updateMatrix[i + 1][j].bounce) {
+          updateMatrix[i + 1][j].bounce = true;
+          neighbors.push(updateMatrix[i + 1][j]);
+          this.getNeighbors(updateMatrix, i + 1, j, neighbors);
+        }
+      }
+    }
+
+    if (j < prop.columns - 1) {
+      if (updateMatrix[i][j + 1].frozenValue == mainValue) {
+
+        if (!updateMatrix[i][j + 1].bounce) {
+          updateMatrix[i][j + 1].bounce = true;
+          neighbors.push(updateMatrix[i][j + 1]);
+          this.getNeighbors(updateMatrix, i, j + 1, neighbors);
+        }
+      }
+    }
+
+    //return neighbors;
+  }
+
+
+  getPointSize = () => {
+
+    var animatedPoint = new Animated.Value(35);
+
+    Animated.timing(animatedPoint, {
+      toValue: 40,
+      useNativeDriver: false,
+      duration: 500,
+    })
+      .start(() => {
+        // this.updateValues(startCell, endCell);
+      });
+
+    return animatedPoint;
+  }
+
+
+  getAnimatedTop = (startValue, endValue, duration) => {
+
+    var animatedPoint = new Animated.Value(startValue);
+
+    Animated.timing(animatedPoint, {
+      toValue: endValue,
+      useNativeDriver: false,
+      duration: duration,
+    })
+      .start(() => {
+        // this.updateValues(startCell, endCell);
+      });
+
+    return animatedPoint;
+  }
+
+
+  getAnimatedLeft = (startValue, endValue, duration) => {
+
+    var animatedPoint = new Animated.Value(startValue);
+
+    Animated.timing(animatedPoint, {
+      toValue: endValue,
+      useNativeDriver: false,
+      duration: duration,
+    })
+      .start(() => {
+
+      });
+
+    return animatedPoint;
+  }
+
+  getAnimatedOpacity = (startValue, endValue, duration) => {
+
+    var animatedPoint = new Animated.Value(startValue);
+
+    Animated.timing(animatedPoint, {
+      toValue: endValue,
+      useNativeDriver: false,
+      duration: duration,
+    })
+      .start(() => {
+        this.updateScores()
+      });
+
+    return animatedPoint;
+  }
+
+
+  getBoomStyle = (top, left, durationPosition, durationOpacity) => {
+
+    var style = {
+      opacity: this.getAnimatedOpacity(1, 0, durationOpacity),
+      top: this.state.endCell ? this.getAnimatedTop(this.state.endCell.top + prop.cellHeight/2, this.state.endCell.top + prop.cellWidth/2  + top, durationPosition) : -1,
+      left: this.state.endCell ? this.getAnimatedLeft(this.state.endCell.left + prop.cellWidth/2, this.state.endCell.left + prop.cellWidth/2 + left, durationPosition) : -1,
+      backgroundColor: this.state.endCell ? 'rgb(' + this.state.endCell.colors.main.join() + ')' : 'white'
+    }
+
+    return style;
+  }
+
+
+
+
+  updateScores = () => {
+
+    this.setState({ scores: this.state.scores + this.state.points, points: 0 });
+
+
+  }
 
   updateValues = () => {
 
     var startCell = this.state.startCell;
     var endCell = this.state.endCell;
-    var valueUpdated = false;
+    // var valueUpdated = false;
 
     var updateMatrix = this.state.matrix;
+    var points = 0;
+
+    for (var i = 0; i < updateMatrix.length; i++) {
+      for (var j = 0; j < updateMatrix[i].length; j++) {
+        updateMatrix[i][j].bounce = false;
+      }
+    }
+
 
     if (endCell.value != 0) {
       if (startCell.value == endCell.value) {
 
+        var frozenValue = endCell.value;
         updateMatrix[endCell.i][endCell.j].frozenValue = endCell.value;
+
         updateMatrix[startCell.i][startCell.j].value = 0;
+//updateMatrix[startCell.i][startCell.j].value = Math.floor(Math.random() * (9 - 1 + 1) + 1);
+
         updateMatrix[endCell.i][endCell.j].value = -1;
+        var neighbors = [];
+        this.getNeighbors(updateMatrix, endCell.i, endCell.j, neighbors);
+        if (neighbors.length > 0) {
+          updateMatrix[endCell.i][endCell.j].bounce = true;
+          points = neighbors.length
+        }
+        else {
+          points = neighbors.length + 1;
+        }
+
       }
       else if (startCell.value != endCell.value && startCell.value != 0) {
         updateMatrix[endCell.i][endCell.j].value = startCell.value + endCell.value;
         updateMatrix[startCell.i][startCell.j].value = 0;
-        valueUpdated = true;
+        //updateMatrix[startCell.i][startCell.j].value = Math.floor(Math.random() * (9 - 1 + 1) + 1);
+        // valueUpdated = true;
       }
     }
     else {
       updateMatrix[endCell.i][endCell.j].value = startCell.value;
       updateMatrix[startCell.i][startCell.j].value = 0;
+      //updateMatrix[startCell.i][startCell.j].value = Math.floor(Math.random() * (9 - 1 + 1) + 1);
     }
 
-    // if(updateMatrix[startCell.i][startCell.j].value == 0)
-    //   updateMatrix[startCell.i][startCell.j].colors = getCellColor(0, this.state.colors1, this.state.colors2);
-
-    // var newCell = updateMatrix[endCell.i][endCell.j];
-    // var newValue = newCell.value < 0? newCell.frozenValue : newCell.value;
-   
 
     ///test
     ///////////////////////////////////////////////////
@@ -262,74 +443,50 @@ class Board extends Component {
     ///////////////////////////////////////////////////
 
 
-////need to update colors at any time!!!!!
+    ////need to update colors at any time!!!!!
 
-    let cellsCount = 0;
-    let moneyCount = 0;
-    let lastCell;
-    var colorSeted = false;
+    /*     let cellsCount = 0;
+        let moneyCount = 0;
+        let lastCell;
+        var colorSeted = false; */
     for (var i = 0; i < updateMatrix.length; i++) {
       for (var j = 0; j < updateMatrix[i].length; j++) {
         updateMatrix[i][j].animatedHorizontal = false;
         updateMatrix[i][j].animatedVertical = false;
 
-        var cellValue = updateMatrix[i][j].value < 0? updateMatrix[i][j].frozenValue : updateMatrix[i][j].value;
-        //var cellValue =  updateMatrix[i][j].value;
+        var cellValue = updateMatrix[i][j].value < 0 ? updateMatrix[i][j].frozenValue : updateMatrix[i][j].value;
 
         const existsColor = this.state.colors.find(x => x.value == cellValue);
 
-        const colorsState = this.state.colors;
+        //const colorsState = this.state.colors;
 
-        if(existsColor)
-        {
+        if (existsColor) {
           updateMatrix[i][j].colors = existsColor.colors;
         }
         else {
-          const colors =  getCellColor(cellValue, this.state.colors1, this.state.colors2);
+          const colors = getCellColor(cellValue, this.state.colors1, this.state.colors2);
           updateMatrix[i][j].colors = colors;
 
-          if(colors.newColor)
-          {
+          if (colors.newColor) {
             this.setState(prevState => ({
-              colors: [...prevState.colors, {value: cellValue, colors: colors }]
+              colors: [...prevState.colors, { value: cellValue, colors: colors }]
             }))
           }
         }
 
 
+        /*    if (updateMatrix[i][j].value > 0) {
+             lastCell = updateMatrix[i][j];
+             cellsCount++;
+           }
+           if (updateMatrix[i][j].value == -1) {
+             moneyCount++;
+           } */
 
-        if (updateMatrix[i][j].value > 0) {
-          lastCell = updateMatrix[i][j];
-          cellsCount++;
-        }
-        if (updateMatrix[i][j].value == -1) {
-          moneyCount++;
-        }
       }
     }
 
-    if (cellsCount == 1) {
-      for (var i = 0; i < updateMatrix.length; i++) {
-        for (var j = 0; j < updateMatrix[i].length; j++) {
-          if (updateMatrix[i][j].value == -1 && (lastCell.i == i || lastCell.j == j)) {
-            updateMatrix[i][j].fall = true;
-          }
-        }
-      }
-    }
-
-    // if(!colorSeted && endCell.value != 0 && valueUpdated) {
-    //   newCell.colors = getCellColor(newValue, this.state.colors1, this.state.colors2);
-    // }
-
-
-    //this.setPosition(updateMatrix);
-    /*     this.setState({ lastCell: lastCell });
-    this.setState({ cellCount: cellsCount });
-    this.setState({ money: moneyCount }); */
-    this.setState({ matrix: updateMatrix, restart: !this.state.restart });
-    //  this.setState({ restart: !this.state.restart });
-    //return updateMatrix;
+    this.setState({ matrix: updateMatrix, restart: !this.state.restart, points: points });
   }
 
 
@@ -350,68 +507,103 @@ class Board extends Component {
 
     for (var i = 0; i < data.length; i++) {
       var cell = data[i];
-      if(cell.value == -1)
-      {
+      if (cell.value == -1) {
 
         var existsCell = data.find(x => (x.i != cell.i || x.j != cell.j) && x.value == cell.frozenValue);
         data[i].canBeUnfrozen = !existsCell;
-      /*   if(!existsCell)
-        {
-          data[i].canBeUnfrozen = true;
-        } */
+        /*   if(!existsCell)
+          {
+            data[i].canBeUnfrozen = true;
+          } */
       }
 
     }
 
+
+    /*  const pointStyle = {
+       fontSize: this.getPointSize(),
+       position: 'absolute',
+       color: 'red',
+       opacity: this.getPointOpacity(),
+       top: this.state.endCell ? this.getPointTop() : -1,
+       left: this.state.endCell ? this.getPointLeft() : -1,
+       transform: [{rotate: this.getPointSpin()}]
+     } */
+
     let tableBody = data.map(item => {
 
-      let cell = <Cell
+      let cells = <Cell
         key={item.id}
         restartView={this.state.restart} cell={item}
         onMove={this.onMove}
-        onAnimationEnd={this.updateValues}
+        //onAnimationEnd={this.updateValues}
         prop={prop}
         animatedMove={this.state.animatedMove}
-        unfreezeCell = {this.unfreezeCell}
+        unfreezeCell={this.unfreezeCell}
+        points={this.state.points}
       >
 
       </Cell>;
 
-      /*  let animatedCell = <Animated.View key={item.id} style={[styles(prop).cell,
-       {
-         left: item.animatedHorizontal == true ? this.state.animatedMove : item.left,
-         top: item.animatedVertical == true ? this.state.animatedMove : item.top
-       }
-       ]}>
-         {cell}
-       </Animated.View> */
-
-      /*         :
-              <View key={item.id} style={[styles(prop).cell,
-              {
-                left: item.left,
-                top: item.top
-              }]}>
-                {cell}
-              </View>; */
-
-      /*  return <GestureRecognizer key={item.id} nativeID={item.id}
-       onSwipe={(direction, state) => this.onSwipe(direction, state, item)}>
-       {cellBox}
-     </GestureRecognizer>  */
-
-
-      /* return <View key={item.id} nativeID={item.id}>
-        {cellBox}
-      </View> */
-      return cell;
+      return cells;
 
     });
 
+    let points = this.state.points;
+
+    let pointAnimation = <View></View>;
+    let boomAnimation = <View></View>;
+
+    if (points > 0) {
+
+      var pointProp = {
+        size: this.getPointSize(),
+        opacity: this.getAnimatedOpacity(1, 0, 600),
+        top: this.state.endCell ? this.getAnimatedTop(this.state.endCell.top, -70, 800) : -1,
+        left: this.state.endCell ? this.getAnimatedLeft(this.state.endCell.left, 130, 800) : -1,
+        color: this.state.endCell ? 'rgb(' + this.state.endCell.colors.main.join() + ')' : 'white'
+      }
+
+      pointAnimation = <Animated.Text style={[pointStyle(pointProp).pointStyle]}>+{points}</Animated.Text>;
+
+     /*  var partItems = [
+        { id: 1, top: -20, left: 50 },
+        { id: 2, top: -20, left: -50 },
+        { id: 3, top: 0, left: -50 },
+        { id: 4, top: 0, left: 50 },
+        { id: 5, top: -60, left: -30 },
+         { id: 6, top: -70, left: 70 },
+        { id: 7, top: 20, left: 60 },
+        { id: 8, top: -10, left: -70 },
+        { id: 9, top: 20, left: 80 }, 
+      ];
+
+
+
+      boomAnimation = partItems.map(item => {
+
+        let parts = <Animated.View key={item.id} style={[boomStyle.boomStyle, this.getBoomStyle(item.top, item.left, 500, 600)]}>
+
+        </Animated.View>;
+
+        return parts;
+
+      }); */
+
+
+    }
+
 
     return (
-      <View style={styles(prop).board}>
-        {tableBody}
+      <View style={styles(prop).panel}>
+        <View style={styles(prop).bar}></View>
+        <TopPanel scores={this.state.scores} newGame={this.restartBoard}></TopPanel>
+        <View style={styles(prop).boardPanel}>
+          <View style={styles(prop).board}>
+            {tableBody}
+            {pointAnimation}
+          </View>
+        </View>
       </View>
     );
   }
@@ -437,17 +629,46 @@ export default connect(mapStateToProps, mapDispatchToProps)(Board);
 const styles = (prop) => StyleSheet.create({
 
   board: {
-    backgroundColor: "rgba(146, 146, 146, 0.5)",
-    flex: 1,
-    position: 'absolute',
+    backgroundColor: "rgba(146, 146, 146, 0.2)",
     width: prop.columns * prop.cellWidth,
-    height: prop.rows * prop.cellHeight
+    height: prop.rows * prop.cellHeight,
+    borderColor: 'rgba(0, 0, 0, 0.5)',
+    borderWidth: 0.3,
+    borderRadius: 5
   },
-  cell: {
-    width: prop.cellWidth,
-    height: prop.cellHeight,
-    position: 'absolute',
+  boardPanel: {
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
+  },
+  panel: {
+    alignSelf: 'stretch',
+  },
+  bar: {
+    height: 50,
   }
 });
+
+
+const pointStyle = (prop) => StyleSheet.create({
+
+  pointStyle: {
+    fontSize: prop.size,// this.getPointSize(),
+    position: 'absolute',
+    color: prop.color,
+    opacity: prop.opacity,
+    top: prop.top,// this.state.endCell ? this.getPointTop() : -1,
+    left: prop.left,// this.state.endCell ? this.getPointLeft() : -1,
+  }
+});
+
+/* const boomStyle = StyleSheet.create({
+
+  boomStyle: {
+    width: 25,
+    height: 25,
+   borderBottomEndRadius: 2,
+   position: 'absolute'
+  }
+}); */
+
+

@@ -6,10 +6,16 @@ import { Provider, connect } from 'react-redux';
 import reducer from './Store/index';
 const store = createStore(reducer); 
 
+
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
+    
+    //const {height, width } = Dimensions.get('window');
+
+    this.state = {
+      //height: height, width: width
+    };
   }
 
   componentDidMount = () => {
@@ -20,18 +26,18 @@ class App extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <Provider store={store}><Board></Board></Provider>
+          <Provider store={store}><Board></Board></Provider>
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
+
   container: {
-    top: 100,
-    backgroundColor: '#ddd',
+    flex: 1,
+    backgroundColor: 'rgb(230, 230, 230)',
     alignItems: 'center',
-    position: 'relative'
   }
 });
 
