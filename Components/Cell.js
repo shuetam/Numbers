@@ -139,7 +139,7 @@ class Cell extends Component {
     }
 
     if (this.props.cell.value == -1) {
-      content = this.props.cell.frozenValue;
+      content =  this.props.cell.frozenValue;
     }
 
 
@@ -246,7 +246,7 @@ class Cell extends Component {
 
     var positionVerify = this.checkPosition(direct, valueX, valueY);
 
-    if (positionVerify.stop && this.props.cell.value != -1)
+    if (positionVerify.stop)// && this.props.cell.value != -1)
       return false;
 
 
@@ -310,12 +310,12 @@ class Cell extends Component {
 
   handlePanResponderMove = (e, gestureState) => {
 
-    if (this.props.cell.value == 0 || (this.props.cell.value == -1 && !this.props.cell.canBeUnfrozen))
-      return;
+    //if (this.props.cell.value == 0 || (this.props.cell.value == -1 && !this.props.cell.canBeUnfrozen))
+     // return;
 
     var direct = this.getDirect(gestureState);
 
-    if (this.props.cell.value == -1 || !direct)
+    if ( !direct)
       return;
 
     const time = new Date().getTime();
@@ -360,8 +360,8 @@ class Cell extends Component {
 
   handlePanResponderEnd = (e, gestureState) => {
 
-    if (this.state.dragging == false || (!this.props.cell.canBeUnfrozen && this.props.cell.value == -1))
-      return;
+  //  if (this.state.dragging == false || (!this.props.cell.canBeUnfrozen && this.props.cell.value == -1))
+    //  return;
 
     var direct = this.getDirect(gestureState);
 
@@ -375,12 +375,12 @@ class Cell extends Component {
 
     var sectionSpeed = direct.manualyMoved ? 0.5 : direct.sectionTrack / (time - prevTime);
 
-    if (sectionSpeed > 0.3 || sectionSpeed > this.state.speed && this.state.dragging == true && this.props.cell.value != -1) {
+    if (sectionSpeed > 0.3 || sectionSpeed > this.state.speed && this.state.dragging == true){// && this.props.cell.value != -1) {
       this.props.onMove(this.props.cell, direct.direct, gestureState, sectionSpeed);
     }
 
-    if (sectionSpeed != 0 && sectionSpeed < 0.2 && this.props.cell.value == -1)
-      this.props.unfreezeCell(this.props.cell);
+    //if (sectionSpeed != 0 && sectionSpeed < 0.2 && this.props.cell.value == -1)
+     // this.props.unfreezeCell(this.props.cell);
 
     this.finishDragging();
 
@@ -424,8 +424,8 @@ const styles = (props) => StyleSheet.create({
   },
 
   innerCell: {
-    width: props.cell.value == -1 ? '95%' : '90%',
-    height: props.cell.value == -1 ? '95%' : '90%',
+    width:  '90%',
+    height: '90%',
     backgroundColor: props.cell.value == -1 ? 'rgba(146, 146, 146, 0.3)' : (props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgb(' + props.cell.colors.under.join() + ')'),
     borderRadius: 5,
     borderColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgba(0, 0, 0, 0.3)',
@@ -435,7 +435,7 @@ const styles = (props) => StyleSheet.create({
   innerinCell: {
     width: '100%',
     height: props.cell.value == -1 ? '100%' : '93%',
-    backgroundColor: props.cell.value == -1 ? 'rgba(0, 0, 0, 0)' : 'rgba(' + props.cell.colors.main.join() + ')',
+    backgroundColor: props.cell.value == -1 ? 'red' : 'rgba(' + props.cell.colors.main.join() + ')',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
@@ -444,7 +444,7 @@ const styles = (props) => StyleSheet.create({
   },
   innerText: {
     fontSize: 30,
-    color: props.cell.value == -1 && props.cell.canBeUnfrozen ? 'rgb(' + props.cell.colors.main.join() + ')' : 'rgba(225, 225, 225, 1)',
+    color: props.cell.value == -1 ? 'rgb(' + props.cell.colors.main.join() + ')' : 'rgba(225, 225, 225, 1)',
     //fontFamily: 'Robot', 
     //  fontWeight: 500
   }

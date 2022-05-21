@@ -10,7 +10,7 @@ import { getCellColor } from '../Common/ColorGenerator';
 
 const prop = {
   columns: 5,
-  rows: 5,
+  rows: 6,
   cellWidth: 60,
   cellHeight: 60,
 }
@@ -122,7 +122,7 @@ class Board extends Component {
 
     var cells = this.getCellsForDirection(cell, direct);
 
-    if (cells.length == 0 || cell.value == -1)
+    if (cells.length == 0)// || cell.value == -1)
       return -1;
 
     var cellValue = 0;
@@ -131,8 +131,13 @@ class Board extends Component {
     while (cellValue == 0 && cells.length > 0) {
       let nextCell = cells.shift();
       cellValue = nextCell.value;
-      if (cellValue >= 0)
+
+      if (cellValue >= 0 && cell.value > 0)
         ++track;
+
+      if (cellValue == 0 && cell.value == -1)
+        ++track;
+
     }
 
     return track;
@@ -186,12 +191,21 @@ class Board extends Component {
       let nextCell = cells.shift();
 
       cellValue = nextCell.value;
-      if (cellValue >= 0)
+
+      if (cellValue >= 0 && startCell.value > 0)
+        endCell = nextCell;
+
+
+      if (cellValue == 0 && startCell.value == -1)
         endCell = nextCell;
     }
 
 
-    if (startCell.value == -1 || endCell.value == -1)
+    //if (startCell.value == -1 || endCell.value == -1)
+    //return;
+
+
+    if (endCell.value == -1)
       return;
 
 
@@ -362,8 +376,8 @@ class Board extends Component {
 
     var style = {
       opacity: this.getAnimatedOpacity(1, 0, durationOpacity),
-      top: this.state.endCell ? this.getAnimatedTop(this.state.endCell.top + prop.cellHeight/2, this.state.endCell.top + prop.cellWidth/2  + top, durationPosition) : -1,
-      left: this.state.endCell ? this.getAnimatedLeft(this.state.endCell.left + prop.cellWidth/2, this.state.endCell.left + prop.cellWidth/2 + left, durationPosition) : -1,
+      top: this.state.endCell ? this.getAnimatedTop(this.state.endCell.top + prop.cellHeight / 2, this.state.endCell.top + prop.cellWidth / 2 + top, durationPosition) : -1,
+      left: this.state.endCell ? this.getAnimatedLeft(this.state.endCell.left + prop.cellWidth / 2, this.state.endCell.left + prop.cellWidth / 2 + left, durationPosition) : -1,
       backgroundColor: this.state.endCell ? 'rgb(' + this.state.endCell.colors.main.join() + ')' : 'white'
     }
 
@@ -396,16 +410,17 @@ class Board extends Component {
     }
 
 
-    if (endCell.value != 0) {
+    if (endCell.value > 0) {
       if (startCell.value == endCell.value) {
 
         var frozenValue = endCell.value;
-        updateMatrix[endCell.i][endCell.j].frozenValue = endCell.value;
-
-        updateMatrix[startCell.i][startCell.j].value = 0;
-//updateMatrix[startCell.i][startCell.j].value = Math.floor(Math.random() * (9 - 1 + 1) + 1);
+        updateMatrix[endCell.i][endCell.j].frozenValue = frozenValue;
 
         updateMatrix[endCell.i][endCell.j].value = -1;
+       
+        updateMatrix[startCell.i][startCell.j].value = 0;
+        //updateMatrix[startCell.i][startCell.j].value = Math.floor(Math.random() * (9 - 1 + 1) + 1);
+
         var neighbors = [];
         this.getNeighbors(updateMatrix, endCell.i, endCell.j, neighbors);
         if (neighbors.length > 0) {
@@ -426,8 +441,11 @@ class Board extends Component {
     }
     else {
       updateMatrix[endCell.i][endCell.j].value = startCell.value;
+     // updateMatrix[endCell.i][endCell.j].frozenValue = startCell.frozenValue;
       updateMatrix[startCell.i][startCell.j].value = 0;
-      //updateMatrix[startCell.i][startCell.j].value = Math.floor(Math.random() * (9 - 1 + 1) + 1);
+
+      if(updateMatrix[endCell.i][endCell.j].value == -1)
+        updateMatrix[startCell.i][startCell.j].value = Math.floor(Math.random() * (9 - 1 + 1) + 1);
     }
 
 
@@ -510,7 +528,8 @@ class Board extends Component {
       if (cell.value == -1) {
 
         var existsCell = data.find(x => (x.i != cell.i || x.j != cell.j) && x.value == cell.frozenValue);
-        data[i].canBeUnfrozen = !existsCell;
+
+        data[i].canBeUnfrozen = true;//!existsCell;
         /*   if(!existsCell)
           {
             data[i].canBeUnfrozen = true;
@@ -566,29 +585,29 @@ class Board extends Component {
 
       pointAnimation = <Animated.Text style={[pointStyle(pointProp).pointStyle]}>+{points}</Animated.Text>;
 
-     /*  var partItems = [
-        { id: 1, top: -20, left: 50 },
-        { id: 2, top: -20, left: -50 },
-        { id: 3, top: 0, left: -50 },
-        { id: 4, top: 0, left: 50 },
-        { id: 5, top: -60, left: -30 },
-         { id: 6, top: -70, left: 70 },
-        { id: 7, top: 20, left: 60 },
-        { id: 8, top: -10, left: -70 },
-        { id: 9, top: 20, left: 80 }, 
-      ];
-
-
-
-      boomAnimation = partItems.map(item => {
-
-        let parts = <Animated.View key={item.id} style={[boomStyle.boomStyle, this.getBoomStyle(item.top, item.left, 500, 600)]}>
-
-        </Animated.View>;
-
-        return parts;
-
-      }); */
+      /*  var partItems = [
+         { id: 1, top: -20, left: 50 },
+         { id: 2, top: -20, left: -50 },
+         { id: 3, top: 0, left: -50 },
+         { id: 4, top: 0, left: 50 },
+         { id: 5, top: -60, left: -30 },
+          { id: 6, top: -70, left: 70 },
+         { id: 7, top: 20, left: 60 },
+         { id: 8, top: -10, left: -70 },
+         { id: 9, top: 20, left: 80 }, 
+       ];
+ 
+ 
+ 
+       boomAnimation = partItems.map(item => {
+ 
+         let parts = <Animated.View key={item.id} style={[boomStyle.boomStyle, this.getBoomStyle(item.top, item.left, 500, 600)]}>
+ 
+         </Animated.View>;
+ 
+         return parts;
+ 
+       }); */
 
 
     }
