@@ -435,7 +435,7 @@ const styles = (props) => StyleSheet.create({
   innerinCell: {
     width: '100%',
     height: props.cell.value == -1 ? '100%' : '93%',
-    backgroundColor: props.cell.value == -1 ? 'red' : 'rgba(' + props.cell.colors.main.join() + ')',
+    backgroundColor: props.cell.value == -1 ? 'rgba(0, 0, 0, 0.05 )' : 'rgba(' + props.cell.colors.main.join() + ')',
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,

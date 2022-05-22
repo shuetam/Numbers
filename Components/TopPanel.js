@@ -27,7 +27,7 @@ class TopPanel extends Component {
                         <Text style={styles.innerTextScores}>{this.props.scores}</Text>
                     </View>
                     <View style={[styles.button]} onTouchEnd={this.newGame}>
-                        <Text>Scores</Text>
+                        <Text>{this.props.nextValue}</Text>
                     </View>
                 </View>
              

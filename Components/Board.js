@@ -9,8 +9,8 @@ import { getCellColor } from '../Common/ColorGenerator';
 
 
 const prop = {
-  columns: 5,
-  rows: 6,
+  columns: 4,
+  rows: 4,
   cellWidth: 60,
   cellHeight: 60,
 }
@@ -31,7 +31,8 @@ class Board extends Component {
       money: 0,
       restart: true,
       colors: [],
-      scores: 0
+      scores: 0,
+      nextValue: Math.floor(Math.random() * (9 - 1 + 1) + 1)
     }
   }
 
@@ -44,7 +45,7 @@ class Board extends Component {
 
   restartBoard = () => {
 
-    this.setState({ matrix: this.generateMatrix(), points: 0, scores: 0 });
+    this.setState({ matrix: this.generateMatrix(), points: 0, scores: 0,  nextValue:  Math.floor(Math.random() * (9 - 1 + 1) + 1) });
 
   }
 
@@ -411,6 +412,7 @@ class Board extends Component {
 
 
     if (endCell.value > 0) {
+      var updateRandom = false;
       if (startCell.value == endCell.value) {
 
         var frozenValue = endCell.value;
@@ -441,11 +443,15 @@ class Board extends Component {
     }
     else {
       updateMatrix[endCell.i][endCell.j].value = startCell.value;
-     // updateMatrix[endCell.i][endCell.j].frozenValue = startCell.frozenValue;
+      updateMatrix[endCell.i][endCell.j].frozenValue = startCell.frozenValue;
       updateMatrix[startCell.i][startCell.j].value = 0;
 
       if(updateMatrix[endCell.i][endCell.j].value == -1)
-        updateMatrix[startCell.i][startCell.j].value = Math.floor(Math.random() * (9 - 1 + 1) + 1);
+      {
+        const nextValue = this.state.nextValue;
+        updateMatrix[startCell.i][startCell.j].value = nextValue;
+        updateRandom = true; 
+      }
     }
 
 
@@ -504,7 +510,7 @@ class Board extends Component {
       }
     }
 
-    this.setState({ matrix: updateMatrix, restart: !this.state.restart, points: points });
+    this.setState({ matrix: updateMatrix, restart: !this.state.restart, points: points, nextValue: updateRandom?  Math.floor(Math.random() * (9 - 1 + 1) + 1) : this.state.nextValue });
   }
 
 
@@ -616,7 +622,7 @@ class Board extends Component {
     return (
       <View style={styles(prop).panel}>
         <View style={styles(prop).bar}></View>
-        <TopPanel scores={this.state.scores} newGame={this.restartBoard}></TopPanel>
+        <TopPanel scores={this.state.scores} nextValue={this.state.nextValue} newGame={this.restartBoard}></TopPanel>
         <View style={styles(prop).boardPanel}>
           <View style={styles(prop).board}>
             {tableBody}
