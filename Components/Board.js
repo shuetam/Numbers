@@ -8,9 +8,10 @@ import { moveCell } from '../Store/Actions';
 import { getCellColor } from '../Common/ColorGenerator';
 
 
+
 const prop = {
   columns: 4,
-  rows: 4,
+  rows: 5,
   cellWidth: 60,
   cellHeight: 60,
 }
@@ -45,7 +46,7 @@ class Board extends Component {
 
   restartBoard = () => {
 
-    this.setState({ matrix: this.generateMatrix(), points: 0, scores: 0,  nextValue:  Math.floor(Math.random() * (9 - 1 + 1) + 1) });
+    this.setState({blockMove: false, matrix: this.generateMatrix(), points: 0, scores: 0, nextValue: Math.floor(Math.random() * (9 - 1 + 1) + 1) });
 
   }
 
@@ -84,10 +85,12 @@ class Board extends Component {
   }
 
 
+
   onMove = (startCell, direct, gestureState, speed) => {
 
     if (this.state.cellCount < 2 || !startCell || startCell == undefined)
       return;
+
 
     let endCell = null;
 
@@ -168,11 +171,11 @@ class Board extends Component {
   }
 
 
-  unfreezeCell = (cell) => {
-    cell.value = cell.frozenValue;
-    cell.canBeUnfrozen = false;
-    this.setState({ restart: !this.state.restart });
-  }
+  /*  unfreezeCell = (cell) => {
+     cell.value = cell.frozenValue;
+     cell.canBeUnfrozen = false;
+     this.setState({ restart: !this.state.restart });
+   } */
 
 
   updateBoard = (direct, startCell, endCell, gestureState, speed) => {
@@ -201,11 +204,6 @@ class Board extends Component {
         endCell = nextCell;
     }
 
-
-    //if (startCell.value == -1 || endCell.value == -1)
-    //return;
-
-
     if (endCell.value == -1)
       return;
 
@@ -224,6 +222,8 @@ class Board extends Component {
       endValue = endCell.top;
     }
 
+
+
     var animatedMove = new Animated.Value(startValue);
     let track = Math.abs(endValue - startValue);
     let duration = speed == 0 ? 500 : track / speed;
@@ -237,7 +237,6 @@ class Board extends Component {
       .start(() => {
         this.updateValues(startCell, endCell);
       });
-
 
     this.setState({
       startCell: startCell,
@@ -253,57 +252,57 @@ class Board extends Component {
 
   }
 
-  getNeighbors(updateMatrix, i, j, neighbors) {
-    //var neighborsCount = 0;
-    var mainValue = updateMatrix[i][j].frozenValue;
-    //var neighbors = [];
-
-    if (i > 0) {
-      if (updateMatrix[i - 1][j].frozenValue == mainValue) {
-
-        if (!updateMatrix[i - 1][j].bounce) {
-          updateMatrix[i - 1][j].bounce = true;
-          neighbors.push(updateMatrix[i - 1][j]);
-          this.getNeighbors(updateMatrix, i - 1, j, neighbors);
+  /*   getNeighbors(updateMatrix, i, j, neighbors) {
+      //var neighborsCount = 0;
+      var mainValue = updateMatrix[i][j].frozenValue;
+      //var neighbors = [];
+  
+      if (i > 0) {
+        if (updateMatrix[i - 1][j].frozenValue == mainValue) {
+  
+          if (!updateMatrix[i - 1][j].bounce) {
+            updateMatrix[i - 1][j].bounce = true;
+            neighbors.push(updateMatrix[i - 1][j]);
+            this.getNeighbors(updateMatrix, i - 1, j, neighbors);
+          }
         }
       }
-    }
-
-    if (j > 0) {
-      if (updateMatrix[i][j - 1].frozenValue == mainValue) {
-
-        if (!updateMatrix[i][j - 1].bounce) {
-          updateMatrix[i][j - 1].bounce = true;
-          neighbors.push(updateMatrix[i][j - 1]);
-          this.getNeighbors(updateMatrix, i, j - 1, neighbors);
+  
+      if (j > 0) {
+        if (updateMatrix[i][j - 1].frozenValue == mainValue) {
+  
+          if (!updateMatrix[i][j - 1].bounce) {
+            updateMatrix[i][j - 1].bounce = true;
+            neighbors.push(updateMatrix[i][j - 1]);
+            this.getNeighbors(updateMatrix, i, j - 1, neighbors);
+          }
         }
       }
-    }
-
-    if (i < prop.rows - 1) {
-      if (updateMatrix[i + 1][j].frozenValue == mainValue) {
-
-        if (!updateMatrix[i + 1][j].bounce) {
-          updateMatrix[i + 1][j].bounce = true;
-          neighbors.push(updateMatrix[i + 1][j]);
-          this.getNeighbors(updateMatrix, i + 1, j, neighbors);
+  
+      if (i < prop.rows - 1) {
+        if (updateMatrix[i + 1][j].frozenValue == mainValue) {
+  
+          if (!updateMatrix[i + 1][j].bounce) {
+            updateMatrix[i + 1][j].bounce = true;
+            neighbors.push(updateMatrix[i + 1][j]);
+            this.getNeighbors(updateMatrix, i + 1, j, neighbors);
+          }
         }
       }
-    }
-
-    if (j < prop.columns - 1) {
-      if (updateMatrix[i][j + 1].frozenValue == mainValue) {
-
-        if (!updateMatrix[i][j + 1].bounce) {
-          updateMatrix[i][j + 1].bounce = true;
-          neighbors.push(updateMatrix[i][j + 1]);
-          this.getNeighbors(updateMatrix, i, j + 1, neighbors);
+  
+      if (j < prop.columns - 1) {
+        if (updateMatrix[i][j + 1].frozenValue == mainValue) {
+  
+          if (!updateMatrix[i][j + 1].bounce) {
+            updateMatrix[i][j + 1].bounce = true;
+            neighbors.push(updateMatrix[i][j + 1]);
+            this.getNeighbors(updateMatrix, i, j + 1, neighbors);
+          }
         }
       }
-    }
-
-    //return neighbors;
-  }
+  
+      //return neighbors;
+    } */
 
 
   getPointSize = () => {
@@ -316,7 +315,7 @@ class Board extends Component {
       duration: 500,
     })
       .start(() => {
-        // this.updateValues(startCell, endCell);
+        
       });
 
     return animatedPoint;
@@ -333,10 +332,40 @@ class Board extends Component {
       duration: duration,
     })
       .start(() => {
-        // this.updateValues(startCell, endCell);
+
       });
 
     return animatedPoint;
+  }
+
+  getAnimatedRotateStyle = (endValue, duration) => {
+
+    var rotateAnimation = new Animated.Value(0);
+
+    Animated.timing(rotateAnimation, {
+      toValue: 1,
+      useNativeDriver: false,
+      duration: duration,
+    })
+      .start(() => {
+
+      });
+
+    const interpolateRotating = rotateAnimation.interpolate({
+      inputRange: [0, 1],
+      outputRange: ['0deg', endValue + 'deg'],
+    });
+
+    const animatedStyle = {
+      transform: [
+        {
+          rotate: interpolateRotating,
+        },
+      ],
+    };
+
+
+    return animatedStyle;
   }
 
 
@@ -373,13 +402,21 @@ class Board extends Component {
   }
 
 
-  getBoomStyle = (top, left, durationPosition, durationOpacity) => {
+  getBoomStyle = (part, durationPosition, durationOpacity, endCell) => {
+
+    var leftBoard = prop.cellWidth;
+    var topBoard = prop.cellHeight;
+    var startTop = endCell.top + this.getExplodeRandom(0, topBoard);
+    var startLeft = endCell.left + this.getExplodeRandom(0, leftBoard)
 
     var style = {
       opacity: this.getAnimatedOpacity(1, 0, durationOpacity),
-      top: this.state.endCell ? this.getAnimatedTop(this.state.endCell.top + prop.cellHeight / 2, this.state.endCell.top + prop.cellWidth / 2 + top, durationPosition) : -1,
-      left: this.state.endCell ? this.getAnimatedLeft(this.state.endCell.left + prop.cellWidth / 2, this.state.endCell.left + prop.cellWidth / 2 + left, durationPosition) : -1,
-      backgroundColor: this.state.endCell ? 'rgb(' + this.state.endCell.colors.main.join() + ')' : 'white'
+      top: endCell ? this.getAnimatedTop(startTop, startTop + this.getExplodeRandom(-60, 60), durationPosition) : -1,
+      left: endCell ? this.getAnimatedLeft(startLeft, startLeft + this.getExplodeRandom(-60, 60), durationPosition) : -1,
+      backgroundColor: part.color ? part.color  : 'rgb(123, 123, 123)',
+      width: this.getExplodeRandom(5, 15),
+      height: this.getExplodeRandom(5, 15),
+    
     }
 
     return style;
@@ -390,25 +427,46 @@ class Board extends Component {
 
   updateScores = () => {
 
-    this.setState({ scores: this.state.scores + this.state.points, points: 0 });
+    //this function is update after move (second render)
+    var updateMatrix = this.state.matrix;
 
+    for (var i = 0; i < updateMatrix.length; i++) {
+      for (var j = 0; j < updateMatrix[i].length; j++) {
+        updateMatrix[i][j].bounce = false; 
+        
+        if(updateMatrix[i][j].value == 0) {
+          updateMatrix[i][j].colors = getCellColor(0, 0, 0);
+        }
+      }
+    }
+    this.setState({blockMove: false, restart: !this.state.restart, boomCells: false, scores: this.state.scores + this.state.points, points: 0, matrix: updateMatrix });
+  }
 
+  afterApear = () => {
+
+    //this function is update after apear new cell. When restart state is created another render comes
+    var updateMatrix = this.state.matrix;
+
+    for (var i = 0; i < updateMatrix.length; i++) {
+      for (var j = 0; j < updateMatrix[i].length; j++) {
+        updateMatrix[i][j].appear = false;
+        //updateMatrix[i][j].value = 2;
+      }
+    }
+    this.setState({ blockMove: false, matrix: updateMatrix, restart: !this.state.restart });
   }
 
   updateValues = () => {
 
     var startCell = this.state.startCell;
     var endCell = this.state.endCell;
-    // var valueUpdated = false;
 
+    if (!endCell) {
+      return;
+    }
+    var anyCellAnimation = false;
     var updateMatrix = this.state.matrix;
     var points = 0;
-
-    for (var i = 0; i < updateMatrix.length; i++) {
-      for (var j = 0; j < updateMatrix[i].length; j++) {
-        updateMatrix[i][j].bounce = false;
-      }
-    }
 
 
     if (endCell.value > 0) {
@@ -416,29 +474,22 @@ class Board extends Component {
       if (startCell.value == endCell.value) {
 
         var frozenValue = endCell.value;
+
+        updateMatrix[endCell.i][endCell.j].bounce = true;
+        anyCellAnimation = true;
+   
         updateMatrix[endCell.i][endCell.j].frozenValue = frozenValue;
 
         updateMatrix[endCell.i][endCell.j].value = -1;
-       
-        updateMatrix[startCell.i][startCell.j].value = 0;
-        //updateMatrix[startCell.i][startCell.j].value = Math.floor(Math.random() * (9 - 1 + 1) + 1);
 
-        var neighbors = [];
-        this.getNeighbors(updateMatrix, endCell.i, endCell.j, neighbors);
-        if (neighbors.length > 0) {
-          updateMatrix[endCell.i][endCell.j].bounce = true;
-          points = neighbors.length
-        }
-        else {
-          points = neighbors.length + 1;
-        }
+        updateMatrix[startCell.i][startCell.j].value = 0;
+       
+        points = 1;
 
       }
       else if (startCell.value != endCell.value && startCell.value != 0) {
         updateMatrix[endCell.i][endCell.j].value = startCell.value + endCell.value;
         updateMatrix[startCell.i][startCell.j].value = 0;
-        //updateMatrix[startCell.i][startCell.j].value = Math.floor(Math.random() * (9 - 1 + 1) + 1);
-        // valueUpdated = true;
       }
     }
     else {
@@ -446,33 +497,18 @@ class Board extends Component {
       updateMatrix[endCell.i][endCell.j].frozenValue = startCell.frozenValue;
       updateMatrix[startCell.i][startCell.j].value = 0;
 
-      if(updateMatrix[endCell.i][endCell.j].value == -1)
-      {
+      if (updateMatrix[endCell.i][endCell.j].value == -1) {
         const nextValue = this.state.nextValue;
         updateMatrix[startCell.i][startCell.j].value = nextValue;
-        updateRandom = true; 
+
+        updateMatrix[startCell.i][startCell.j].appear = true;
+        anyCellAnimation = true;
+
+        updateRandom = true;
       }
     }
 
 
-    ///test
-    ///////////////////////////////////////////////////
-    /*     for (var i = 0; i < matrix.length; i++) {
-          for (var j = 0; j < matrix[i].length; j++) {
-            updateMatrix[i][j].value = -1;
-          }
-        }
-    
-        updateMatrix[0][0].value = 8; */
-    ///////////////////////////////////////////////////
-
-
-    ////need to update colors at any time!!!!!
-
-    /*     let cellsCount = 0;
-        let moneyCount = 0;
-        let lastCell;
-        var colorSeted = false; */
     for (var i = 0; i < updateMatrix.length; i++) {
       for (var j = 0; j < updateMatrix[i].length; j++) {
         updateMatrix[i][j].animatedHorizontal = false;
@@ -481,8 +517,6 @@ class Board extends Component {
         var cellValue = updateMatrix[i][j].value < 0 ? updateMatrix[i][j].frozenValue : updateMatrix[i][j].value;
 
         const existsColor = this.state.colors.find(x => x.value == cellValue);
-
-        //const colorsState = this.state.colors;
 
         if (existsColor) {
           updateMatrix[i][j].colors = existsColor.colors;
@@ -498,19 +532,62 @@ class Board extends Component {
           }
         }
 
-
-        /*    if (updateMatrix[i][j].value > 0) {
-             lastCell = updateMatrix[i][j];
-             cellsCount++;
-           }
-           if (updateMatrix[i][j].value == -1) {
-             moneyCount++;
-           } */
-
       }
     }
 
-    this.setState({ matrix: updateMatrix, restart: !this.state.restart, points: points, nextValue: updateRandom?  Math.floor(Math.random() * (9 - 1 + 1) + 1) : this.state.nextValue });
+    var boomCells = this.checkRowAndColumn(updateMatrix);
+
+    this.setState({blockMove: anyCellAnimation, boomCells: boomCells, matrix: updateMatrix, restart: !this.state.restart, points: points, nextValue: updateRandom ? Math.floor(Math.random() * (9 - 1 + 1) + 1) : this.state.nextValue });
+
+  }
+
+  checkRowAndColumn(updateMatrix) {
+
+    var boomCells = [];
+
+    for (var i = 0; i < updateMatrix.length; i++) {
+
+      if (updateMatrix[i].every((x) => x.value < 0)) {
+
+        var frozenValues = updateMatrix[i].map((x) => x.frozenValue);
+
+        if (frozenValues.every((v) => frozenValues[0] == v)) {
+          for (var j = 0; j < updateMatrix[i].length; j++) {
+            updateMatrix[i][j].value = 0;
+            updateMatrix[i][j].frozenValue = 0;
+
+            boomCells.push(updateMatrix[i][j]);
+          }
+        }
+      }
+    }
+
+    for (var i = 0; i < updateMatrix[0].length; i++) {
+
+      const column = [];
+
+      for (var j = 0; j < updateMatrix.length; j++) {
+        column.push(updateMatrix[j][i]);
+      }
+
+      if (column.every((x) => x.value < 0)) {
+
+        var frozenValues = column.map((x) => x.frozenValue);
+
+        if (frozenValues.every((v) => frozenValues[0] == v)) {
+          for (var k = 0; k < column.length; k++) {
+            column[k].value = 0;
+            column[k].frozenValue = 0;
+            boomCells.push(column[k]);
+          }
+        }
+      }
+    }
+    return boomCells.length>0? boomCells : false;
+  }
+
+  getExplodeRandom = (min, max) => {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
 
@@ -559,13 +636,15 @@ class Board extends Component {
 
       let cells = <Cell
         key={item.id}
-        restartView={this.state.restart} cell={item}
+        restartView={this.state.restart}
+        cell={item}
         onMove={this.onMove}
-        //onAnimationEnd={this.updateValues}
         prop={prop}
         animatedMove={this.state.animatedMove}
-        unfreezeCell={this.unfreezeCell}
+        afterApear={this.afterApear}
+        //unfreezeCell={this.unfreezeCell}
         points={this.state.points}
+        blockMove={this.state.blockMove}
       >
 
       </Cell>;
@@ -577,44 +656,63 @@ class Board extends Component {
     let points = this.state.points;
 
     let pointAnimation = <View></View>;
-    let boomAnimation = <View></View>;
+    let boomAnimations = <View></View>;
+
+
+    if (this.state.boomCells) {
+
+      var partItems = [
+        /* { id: 1, top: -20, left: 50 },
+        { id: 2, top: -20, left: -50 },
+        { id: 3, top: 0, left: -50 },
+        { id: 4, top: 0, left: 50 },
+        { id: 5, top: -60, left: -30 },
+        { id: 6, top: -70, left: 70 },
+        { id: 7, top: 20, left: 60 },
+        { id: 8, top: -10, left: -70 },
+        { id: 9, top: 20, left: 80 }, 
+        { id: 10, top: 20, left: 30 },
+        { id: 11, top: 30, left: -70 },
+        { id: 12, top: -8, left: 20 } */
+      ];
+
+      for (let i = 1; i < 8; i++) {
+        partItems.push({ id: i });
+      }
+
+      boomAnimations = this.state.boomCells.map(cell => {
+
+        var colorCell = 'rgb(' + cell.colors.main.join() + ')'
+        partItems[0].color = colorCell;
+        partItems[1].color = colorCell;
+        partItems[2].color = colorCell;
+        partItems[3].color = 'white';
+
+        var boomCellAnimation = partItems.map(item => {
+          let parts = <Animated.View key={item.id} style={[boomStyle.boomStyle, this.getBoomStyle(item, 600, 700, cell), this.getAnimatedRotateStyle(this.getExplodeRandom(100, 450), 2000)]}>
+          </Animated.View>;
+
+          return parts;
+        });
+
+        return boomCellAnimation;
+
+
+      });
+
+    }
 
     if (points > 0) {
 
       var pointProp = {
         size: this.getPointSize(),
-        opacity: this.getAnimatedOpacity(1, 0, 600),
+        opacity: this.getAnimatedOpacity(1, 0, 750),
         top: this.state.endCell ? this.getAnimatedTop(this.state.endCell.top, -70, 800) : -1,
         left: this.state.endCell ? this.getAnimatedLeft(this.state.endCell.left, 130, 800) : -1,
         color: this.state.endCell ? 'rgb(' + this.state.endCell.colors.main.join() + ')' : 'white'
       }
 
       pointAnimation = <Animated.Text style={[pointStyle(pointProp).pointStyle]}>+{points}</Animated.Text>;
-
-      /*  var partItems = [
-         { id: 1, top: -20, left: 50 },
-         { id: 2, top: -20, left: -50 },
-         { id: 3, top: 0, left: -50 },
-         { id: 4, top: 0, left: 50 },
-         { id: 5, top: -60, left: -30 },
-          { id: 6, top: -70, left: 70 },
-         { id: 7, top: 20, left: 60 },
-         { id: 8, top: -10, left: -70 },
-         { id: 9, top: 20, left: 80 }, 
-       ];
- 
- 
- 
-       boomAnimation = partItems.map(item => {
- 
-         let parts = <Animated.View key={item.id} style={[boomStyle.boomStyle, this.getBoomStyle(item.top, item.left, 500, 600)]}>
- 
-         </Animated.View>;
- 
-         return parts;
- 
-       }); */
-
 
     }
 
@@ -627,6 +725,7 @@ class Board extends Component {
           <View style={styles(prop).board}>
             {tableBody}
             {pointAnimation}
+            {boomAnimations}
           </View>
         </View>
       </View>
@@ -686,14 +785,13 @@ const pointStyle = (prop) => StyleSheet.create({
   }
 });
 
-/* const boomStyle = StyleSheet.create({
+const boomStyle = StyleSheet.create({
 
   boomStyle: {
-    width: 25,
-    height: 25,
-   borderBottomEndRadius: 2,
-   position: 'absolute'
+    backgroundColor: "transparent",
+    position: "absolute",
+    borderStyle: "solid"
   }
-}); */
+});
 
 

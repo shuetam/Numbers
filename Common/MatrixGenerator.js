@@ -41,7 +41,7 @@ function fillMatrix(matrix) {
 
     for (var i = 0; i < matrix.length; i++) {
         for (var j = 0; j < matrix[i].length; j++) {
-            matrix[i][j] = Math.floor(Math.random() * 9) + 1;
+            matrix[i][j] =  Math.floor(Math.random() * 9) + 1;
         }
     }
     matrix[0][0] = 0;

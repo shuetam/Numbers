@@ -16,6 +16,7 @@
 .blink{
     z-index: 200;
     position: absolute;
+    background-color: rgb(123, 123, 123);
 }
 
 
