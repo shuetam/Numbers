@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { View, Text, StyleSheet, PanResponder, Animated, Easing } from 'react-native';
 import { connect } from 'react-redux';
 import { moveCell } from '../Store/Actions';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 
@@ -169,7 +170,7 @@ class Cell extends Component {
       }
 
       const styleColor = {
-        borderWidth: 0
+        //borderWidth: 0
       }
 
       text = <View style={[styles(this.props).innerinCell, styleColor]}>
@@ -178,6 +179,14 @@ class Cell extends Component {
       </View>
 
     }
+
+    var gradientCell = this.props.cell.gradient?
+     <LinearGradient
+      colors={['rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.0)','rgba(255, 255, 255, 0.0)', 'rgba(255, 255, 255, 0.0)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.5)']}
+      style={styles(this.props).gradient}
+     
+    >
+    </LinearGradient> : <View></View>
 
     if (this.props.cell.appear) {
       //this.props.cell.appear = false;
@@ -201,28 +210,48 @@ class Cell extends Component {
         {...this.panResponder.panHandlers} >
         <Animated.View style={[styles(this.props).innerCell, styleAppear]}>
           {text}
+          {gradientCell}
         </Animated.View>
       </View>);
 
-
-
-      /* return (<Animated.View nativeID={this.props.cell.id + ''} style={[styles(this.props).cell, style, styleAppear]} >
-        <View style={[styles(this.props).innerCell]}>
-          <View style={[styles(this.props).innerinCell]}>
-            <Text nativeID={this.props.cell.id + ''} style={styles(this.props).innerText} >{content}</Text>
-          </View>
-        </View>
-      </Animated.View>); */
     }
 
+    if (this.props.cell.blink11) {
+      //this.props.cell.appear = false;
+      var blinkAnimation = new Animated.Value(0);
+      Animated.timing(blinkAnimation, {
+        toValue: this.props.prop.cellWidth - 35,
+        duration: 200,
+        easing: Easing.ease
+      }).start(() => {
+        //this.props.afterApear()
+      });
 
+      const styleBlink = {
+        left: blinkAnimation
+      }
 
-    /*     if (this.props.cell.value == -1) {
-          content = this.props.cell.frozenValue;
-          text = <View  style={[styles(this.props).innerinCell]}>
-            <Text nativeID={this.props.cell.id + ''} style={styles(this.props).innerText} >{content}</Text>
-          </View>
-        } */
+      return (<View
+        onTouchStart={this.startTouch}
+        nativeID={this.props.cell.id + ''} style={[styles(this.props).cell, style]}
+        {...this.panResponder.panHandlers} >
+        <Animated.View style={[styles(this.props).blinkView, styleBlink]}>
+
+          <LinearGradient
+            colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.7)', 'rgba(255, 255, 255, 0.9)']}
+            style={styles(this.props).blinkGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+          >
+          </LinearGradient>
+
+        </Animated.View>
+        <View style={[styles(this.props).innerCell]}>
+          {text}
+        </View>
+      </View>);
+
+    }
 
 
 
@@ -231,6 +260,7 @@ class Cell extends Component {
       (<Animated.View nativeID={this.props.cell.id + ''} style={[styles(this.props).cell, style]} >
         <View style={[styles(this.props).innerCell]}>
           <View style={[styles(this.props).innerinCell]}>
+            {gradientCell}
             <Text nativeID={this.props.cell.id + ''} style={styles(this.props).innerText} >{content}</Text>
           </View>
         </View>
@@ -241,6 +271,7 @@ class Cell extends Component {
         nativeID={this.props.cell.id + ''} style={[styles(this.props).cell, style]}
         {...this.panResponder.panHandlers} >
         <View style={[styles(this.props).innerCell]}>
+          {gradientCell}
           {text}
         </View>
       </View>);
@@ -459,10 +490,10 @@ const styles = (props) => StyleSheet.create({
   innerCell: {
     width: '90%',
     height: '90%',
-    backgroundColor: props.cell.value == -1 ? 'rgba(146, 146, 146, 0.3)' : (props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgb(' + props.cell.colors.under.join() + ')'),
+    backgroundColor: props.cell.value == -1 ? 'rgba(150, 150, 150, 0.3)' : (props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgb(' + props.cell.colors.under.join() + ')'),
     borderRadius: 5,
     borderColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgba(0, 0, 0, 0.3)',
-    borderWidth: props.cell.value == -1 ? (props.cell.canBeUnfrozen ? 0.5 : 0) : 0.3,
+    borderWidth: props.cell.value == -1 ?  0.5  : 0.3,
   },
 
   innerinCell: {
@@ -474,13 +505,34 @@ const styles = (props) => StyleSheet.create({
     borderRadius: 5,
     borderColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : props.cell.value == -1 ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.5)',
     borderWidth: props.cell.value == -1 ? 2 : 0.5,
+  },
 
-
+  blinkView: {
+    height: '85%',
+    width: 30,
+    zIndex: 100,
+    position: 'absolute',
+    left: 0,
+    borderRadius: 5
+  },
+  blinkGradient: {
+    height: '100%',
+    width: '100%',
+    position: 'relative',
+    borderRadius: 5
+  },
+  gradient: {
+    height: '100%',
+    width: '100%',
+    position: 'absolute',
+    borderRadius: 5,
+   
   },
 
   innerText: {
     fontSize: 30,
     color: props.cell.value == -1 ? 'rgb(' + props.cell.colors.main.join() + ')' : 'rgba(225, 225, 225, 1)',
+    zIndex: 60
     //fontFamily: 'Robot', 
     //  fontWeight: 500
   }

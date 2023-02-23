@@ -23,16 +23,12 @@
 .blinkRight {
     width: 50px;
     height: 100%;
-    animation: blinkRight 1s forwards;
-    animation-iteration-count: 1;
     background: linear-gradient(90deg,transparent,#ffffff);
 }
 
 .blinkLeft {
     width: 50px;
     height: 100%;
-    animation: blinkLeft 1s forwards;
-    animation-iteration-count: 1;
     background: linear-gradient(270deg,transparent,#ffffff);
 }
 

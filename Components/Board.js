@@ -439,7 +439,7 @@ class Board extends Component {
         }
       }
     }
-    this.setState({blockMove: false, restart: !this.state.restart, boomCells: false, scores: this.state.scores + this.state.points, points: 0, matrix: updateMatrix });
+    this.setState({blockMove: false, restart: !this.state.restart, scores: this.state.scores + this.state.points, points: 0, matrix: updateMatrix });
   }
 
   afterApear = () => {
@@ -476,6 +476,7 @@ class Board extends Component {
         var frozenValue = endCell.value;
 
         updateMatrix[endCell.i][endCell.j].bounce = true;
+        updateMatrix[endCell.i][endCell.j].blink = true;
         anyCellAnimation = true;
    
         updateMatrix[endCell.i][endCell.j].frozenValue = frozenValue;
@@ -537,7 +538,10 @@ class Board extends Component {
 
     var boomCells = this.checkRowAndColumn(updateMatrix);
 
-    this.setState({blockMove: anyCellAnimation, boomCells: boomCells, matrix: updateMatrix, restart: !this.state.restart, points: points, nextValue: updateRandom ? Math.floor(Math.random() * (9 - 1 + 1) + 1) : this.state.nextValue });
+    if(boomCells)
+      anyCellAnimation = true;
+
+    this.setState({blockMove: anyCellAnimation, matrix: updateMatrix, restart: !this.state.restart, points: points, nextValue: updateRandom ? Math.floor(Math.random() * (9 - 1 + 1) + 1) : this.state.nextValue });
 
   }
 
@@ -553,8 +557,9 @@ class Board extends Component {
 
         if (frozenValues.every((v) => frozenValues[0] == v)) {
           for (var j = 0; j < updateMatrix[i].length; j++) {
-            updateMatrix[i][j].value = 0;
-            updateMatrix[i][j].frozenValue = 0;
+            //updateMatrix[i][j].value = 0;
+            //updateMatrix[i][j].frozenValue = 0;
+            updateMatrix[i][j].blink = true;
 
             boomCells.push(updateMatrix[i][j]);
           }
@@ -576,8 +581,9 @@ class Board extends Component {
 
         if (frozenValues.every((v) => frozenValues[0] == v)) {
           for (var k = 0; k < column.length; k++) {
-            column[k].value = 0;
-            column[k].frozenValue = 0;
+            //column[k].value = 0;
+            //column[k].frozenValue = 0;
+            column[k].blink = true;
             boomCells.push(column[k]);
           }
         }
@@ -656,25 +662,12 @@ class Board extends Component {
     let points = this.state.points;
 
     let pointAnimation = <View></View>;
-    let boomAnimations = <View></View>;
+    //let boomAnimations = <View></View>;
 
 
-    if (this.state.boomCells) {
+/*     if (this.state.boomCells) {
 
-      var partItems = [
-        /* { id: 1, top: -20, left: 50 },
-        { id: 2, top: -20, left: -50 },
-        { id: 3, top: 0, left: -50 },
-        { id: 4, top: 0, left: 50 },
-        { id: 5, top: -60, left: -30 },
-        { id: 6, top: -70, left: 70 },
-        { id: 7, top: 20, left: 60 },
-        { id: 8, top: -10, left: -70 },
-        { id: 9, top: 20, left: 80 }, 
-        { id: 10, top: 20, left: 30 },
-        { id: 11, top: 30, left: -70 },
-        { id: 12, top: -8, left: 20 } */
-      ];
+      var partItems = [];
 
       for (let i = 1; i < 8; i++) {
         partItems.push({ id: i });
@@ -700,7 +693,7 @@ class Board extends Component {
 
       });
 
-    }
+    } */
 
     if (points > 0) {
 
@@ -725,7 +718,6 @@ class Board extends Component {
           <View style={styles(prop).board}>
             {tableBody}
             {pointAnimation}
-            {boomAnimations}
           </View>
         </View>
       </View>
