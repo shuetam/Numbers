@@ -161,7 +161,7 @@ class Cell extends Component {
         duration: 700,
         easing: Easing.bounce
       }).start(() => {
-
+        this.props.afterBounce();
       });
 
 
@@ -180,13 +180,11 @@ class Cell extends Component {
 
     }
 
-    var gradientCell = this.props.cell.gradient?
+    var gradientCell = <View></View> /* this.props.cell.gradient?
      <LinearGradient
       colors={['rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.0)','rgba(255, 255, 255, 0.0)', 'rgba(255, 255, 255, 0.0)', 'rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.5)']}
-      style={styles(this.props).gradient}
-     
-    >
-    </LinearGradient> : <View></View>
+      style={styles(this.props).gradient}>
+    </LinearGradient> : */
 
     if (this.props.cell.appear) {
       //this.props.cell.appear = false;
@@ -210,48 +208,43 @@ class Cell extends Component {
         {...this.panResponder.panHandlers} >
         <Animated.View style={[styles(this.props).innerCell, styleAppear]}>
           {text}
-          {gradientCell}
         </Animated.View>
       </View>);
 
     }
 
-    if (this.props.cell.blink11) {
-      //this.props.cell.appear = false;
+   /*  if (this.props.cell.blink) {
+
       var blinkAnimation = new Animated.Value(0);
       Animated.timing(blinkAnimation, {
-        toValue: this.props.prop.cellWidth - 35,
-        duration: 200,
+        toValue: this.props.prop.cellWidth * this.props.cell.blinkCellsCount,
+        duration: 900,
         easing: Easing.ease
       }).start(() => {
-        //this.props.afterApear()
+        this.props.afterBlink();
       });
 
-      const styleBlink = {
+
+      const styleBlink =  this.props.cell.blinkDirect == "horizontal"?
+      {
         left: blinkAnimation
+      } : 
+      {
+        top: blinkAnimation
       }
 
-      return (<View
-        onTouchStart={this.startTouch}
-        nativeID={this.props.cell.id + ''} style={[styles(this.props).cell, style]}
-        {...this.panResponder.panHandlers} >
-        <Animated.View style={[styles(this.props).blinkView, styleBlink]}>
+      var end = this.props.cell.blinkDirect == "horizontal"? { x: 1, y: 0 } : { x: 0, y: 1 };
 
-          <LinearGradient
-            colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.7)', 'rgba(255, 255, 255, 0.9)']}
-            style={styles(this.props).blinkGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
+      gradientCell = <Animated.View style={[styles(this.props).blinkView, styleBlink]}>
+        <LinearGradient
+          colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.7)', 'rgba(255, 255, 255, 0.9)']}
+          style={styles(this.props).blinkGradient}
+          start={{ x: 0, y: 0 }}
+          end={end}
           >
-          </LinearGradient>
-
-        </Animated.View>
-        <View style={[styles(this.props).innerCell]}>
-          {text}
-        </View>
-      </View>);
-
-    }
+        </LinearGradient>
+      </Animated.View>
+    } */
 
 
 
@@ -260,7 +253,7 @@ class Cell extends Component {
       (<Animated.View nativeID={this.props.cell.id + ''} style={[styles(this.props).cell, style]} >
         <View style={[styles(this.props).innerCell]}>
           <View style={[styles(this.props).innerinCell]}>
-            {gradientCell}
+
             <Text nativeID={this.props.cell.id + ''} style={styles(this.props).innerText} >{content}</Text>
           </View>
         </View>
@@ -271,7 +264,6 @@ class Cell extends Component {
         nativeID={this.props.cell.id + ''} style={[styles(this.props).cell, style]}
         {...this.panResponder.panHandlers} >
         <View style={[styles(this.props).innerCell]}>
-          {gradientCell}
           {text}
         </View>
       </View>);
@@ -316,10 +308,6 @@ class Cell extends Component {
 
     return { manualyMoved: positionVerify.continue, dx: dx, dy: dy, valueX: valueX, valueY: valueY, direct: direct, sectionTrack: sectionTrack };
   }
-
-
-
-
 
 
   checkPosition = (direct, valueX, valueY) => {
@@ -493,7 +481,7 @@ const styles = (props) => StyleSheet.create({
     backgroundColor: props.cell.value == -1 ? 'rgba(150, 150, 150, 0.3)' : (props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgb(' + props.cell.colors.under.join() + ')'),
     borderRadius: 5,
     borderColor: props.cell.value == 0 ? 'rgba(0, 0, 0, 0)' : 'rgba(0, 0, 0, 0.3)',
-    borderWidth: props.cell.value == -1 ?  0.5  : 0.3,
+    borderWidth: props.cell.value == -1 ? 0.5 : 0.3,
   },
 
   innerinCell: {
@@ -508,8 +496,8 @@ const styles = (props) => StyleSheet.create({
   },
 
   blinkView: {
-    height: '85%',
-    width: 30,
+    height: '100%',
+    width: props.prop.cellWidth,
     zIndex: 100,
     position: 'absolute',
     left: 0,
@@ -526,7 +514,7 @@ const styles = (props) => StyleSheet.create({
     width: '100%',
     position: 'absolute',
     borderRadius: 5,
-   
+
   },
 
   innerText: {

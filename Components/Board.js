@@ -6,6 +6,7 @@ import TopPanel from './TopPanel';
 import { connect } from 'react-redux';
 import { moveCell } from '../Store/Actions';
 import { getCellColor } from '../Common/ColorGenerator';
+import { LinearGradient } from 'expo-linear-gradient';
 
 
 
@@ -46,7 +47,7 @@ class Board extends Component {
 
   restartBoard = () => {
 
-    this.setState({blockMove: false, matrix: this.generateMatrix(), points: 0, scores: 0, nextValue: Math.floor(Math.random() * (9 - 1 + 1) + 1) });
+    this.setState({ blockMove: false, matrix: this.generateMatrix(), points: 0, scores: 0, nextValue: Math.floor(Math.random() * (9 - 1 + 1) + 1) });
 
   }
 
@@ -178,6 +179,26 @@ class Board extends Component {
    } */
 
 
+  afterBlink = () => {
+    this.setState({ blinkCells: false, blinkDirect: "afterBlink" });
+  }
+
+  afterBounce = () => {
+    var updateMatrix = this.state.matrix;
+
+    for (var i = 0; i < updateMatrix.length; i++) {
+      for (var j = 0; j < updateMatrix[i].length; j++) {
+
+          updateMatrix[i][j].bounce = false;
+
+        if (updateMatrix[i][j].value == 0) {
+          updateMatrix[i][j].colors = getCellColor(0, 0, 0);
+        }
+      }
+    }
+    this.setState({ blockMove: false, restart: !this.state.restart, matrix: updateMatrix });
+  }
+
   updateBoard = (direct, startCell, endCell, gestureState, speed) => {
 
     if (!endCell || endCell == null)
@@ -237,6 +258,8 @@ class Board extends Component {
       .start(() => {
         this.updateValues(startCell, endCell);
       });
+
+
 
     this.setState({
       startCell: startCell,
@@ -307,15 +330,15 @@ class Board extends Component {
 
   getPointSize = () => {
 
-    var animatedPoint = new Animated.Value(35);
+    var animatedPoint = new Animated.Value(45);
 
     Animated.timing(animatedPoint, {
-      toValue: 40,
+      toValue: 35,
       useNativeDriver: false,
-      duration: 500,
+      duration: 400,
     })
       .start(() => {
-        
+
       });
 
     return animatedPoint;
@@ -395,65 +418,67 @@ class Board extends Component {
       duration: duration,
     })
       .start(() => {
-        this.updateScores()
+        this.updateScores();
       });
 
     return animatedPoint;
   }
 
 
-  getBoomStyle = (part, durationPosition, durationOpacity, endCell) => {
-
-    var leftBoard = prop.cellWidth;
-    var topBoard = prop.cellHeight;
-    var startTop = endCell.top + this.getExplodeRandom(0, topBoard);
-    var startLeft = endCell.left + this.getExplodeRandom(0, leftBoard)
-
-    var style = {
-      opacity: this.getAnimatedOpacity(1, 0, durationOpacity),
-      top: endCell ? this.getAnimatedTop(startTop, startTop + this.getExplodeRandom(-60, 60), durationPosition) : -1,
-      left: endCell ? this.getAnimatedLeft(startLeft, startLeft + this.getExplodeRandom(-60, 60), durationPosition) : -1,
-      backgroundColor: part.color ? part.color  : 'rgb(123, 123, 123)',
-      width: this.getExplodeRandom(5, 15),
-      height: this.getExplodeRandom(5, 15),
-    
-    }
-
-    return style;
-  }
+  /*  getBoomStyle = (part, durationPosition, durationOpacity, endCell) => {
+ 
+     var leftBoard = prop.cellWidth;
+     var topBoard = prop.cellHeight;
+     var startTop = endCell.top + this.getExplodeRandom(0, topBoard);
+     var startLeft = endCell.left + this.getExplodeRandom(0, leftBoard)
+ 
+     var style = {
+       opacity: this.getAnimatedOpacity(1, 0, durationOpacity),
+       top: endCell ? this.getAnimatedTop(startTop, startTop + this.getExplodeRandom(-60, 60), durationPosition) : -1,
+       left: endCell ? this.getAnimatedLeft(startLeft, startLeft + this.getExplodeRandom(-60, 60), durationPosition) : -1,
+       backgroundColor: part.color ? part.color  : 'rgb(123, 123, 123)',
+       width: this.getExplodeRandom(5, 15),
+       height: this.getExplodeRandom(5, 15),
+     
+     }
+ 
+     return style;
+   } */
 
 
 
 
   updateScores = () => {
-
-    //this function is update after move (second render)
     var updateMatrix = this.state.matrix;
+    
+    var blinkCells = this.checkRowAndColumn(updateMatrix);
+    //blinkCells.blinkCells[0].bounce = true;
+    this.setState({ scores: this.state.scores + this.state.points, 
+      matrix: updateMatrix, 
+      blinkCells: blinkCells.blinkCells,
+      blinkDirect: blinkCells.direct,
+      restart: !this.state.restart,
+      blockMove: false,
+      points: 0 });
 
-    for (var i = 0; i < updateMatrix.length; i++) {
-      for (var j = 0; j < updateMatrix[i].length; j++) {
-        updateMatrix[i][j].bounce = false; 
-        
-        if(updateMatrix[i][j].value == 0) {
-          updateMatrix[i][j].colors = getCellColor(0, 0, 0);
-        }
-      }
-    }
-    this.setState({blockMove: false, restart: !this.state.restart, scores: this.state.scores + this.state.points, points: 0, matrix: updateMatrix });
   }
 
   afterApear = () => {
 
     //this function is update after apear new cell. When restart state is created another render comes
     var updateMatrix = this.state.matrix;
+    var blinkCells = this.checkRowAndColumn(updateMatrix);
 
     for (var i = 0; i < updateMatrix.length; i++) {
       for (var j = 0; j < updateMatrix[i].length; j++) {
         updateMatrix[i][j].appear = false;
-        //updateMatrix[i][j].value = 2;
       }
     }
-    this.setState({ blockMove: false, matrix: updateMatrix, restart: !this.state.restart });
+    this.setState({ blockMove: false, 
+      matrix: updateMatrix, 
+      blinkCells: blinkCells.blinkCells, 
+      blinkDirect: blinkCells.direct,
+      restart: !this.state.restart });
   }
 
   updateValues = () => {
@@ -476,15 +501,11 @@ class Board extends Component {
         var frozenValue = endCell.value;
 
         updateMatrix[endCell.i][endCell.j].bounce = true;
-        updateMatrix[endCell.i][endCell.j].blink = true;
+        //updateMatrix[endCell.i][endCell.j].blink = true;
         anyCellAnimation = true;
-   
         updateMatrix[endCell.i][endCell.j].frozenValue = frozenValue;
-
         updateMatrix[endCell.i][endCell.j].value = -1;
-
         updateMatrix[startCell.i][startCell.j].value = 0;
-       
         points = 1;
 
       }
@@ -536,18 +557,18 @@ class Board extends Component {
       }
     }
 
-    var boomCells = this.checkRowAndColumn(updateMatrix);
-
-    if(boomCells)
-      anyCellAnimation = true;
-
-    this.setState({blockMove: anyCellAnimation, matrix: updateMatrix, restart: !this.state.restart, points: points, nextValue: updateRandom ? Math.floor(Math.random() * (9 - 1 + 1) + 1) : this.state.nextValue });
+    this.setState({
+      blockMove: anyCellAnimation,
+      matrix: updateMatrix, restart: !this.state.restart, points: points,
+      nextValue: updateRandom ? Math.floor(Math.random() * (9 - 1 + 1) + 1) : this.state.nextValue
+    });
 
   }
 
   checkRowAndColumn(updateMatrix) {
 
-    var boomCells = [];
+    var blinkCells = [];
+    var direct = "";
 
     for (var i = 0; i < updateMatrix.length; i++) {
 
@@ -556,40 +577,42 @@ class Board extends Component {
         var frozenValues = updateMatrix[i].map((x) => x.frozenValue);
 
         if (frozenValues.every((v) => frozenValues[0] == v)) {
+          direct = "horizontal";
           for (var j = 0; j < updateMatrix[i].length; j++) {
             //updateMatrix[i][j].value = 0;
             //updateMatrix[i][j].frozenValue = 0;
-            updateMatrix[i][j].blink = true;
-
-            boomCells.push(updateMatrix[i][j]);
+            //updateMatrix[i][j].bounce = true;
+            
+            blinkCells.push(updateMatrix[i][j]);
           }
         }
       }
     }
-
+    
     for (var i = 0; i < updateMatrix[0].length; i++) {
-
+      
       const column = [];
-
+      
       for (var j = 0; j < updateMatrix.length; j++) {
         column.push(updateMatrix[j][i]);
       }
-
+      
       if (column.every((x) => x.value < 0)) {
-
+        
         var frozenValues = column.map((x) => x.frozenValue);
-
+        
         if (frozenValues.every((v) => frozenValues[0] == v)) {
+          direct = "vertical";
           for (var k = 0; k < column.length; k++) {
             //column[k].value = 0;
             //column[k].frozenValue = 0;
-            column[k].blink = true;
-            boomCells.push(column[k]);
+            //column[k].bounce = true;
+            blinkCells.push(column[k]);
           }
         }
       }
     }
-    return boomCells.length>0? boomCells : false;
+    return blinkCells.length > 0 ? { blinkCells: blinkCells, direct: direct } : false;
   }
 
   getExplodeRandom = (min, max) => {
@@ -648,8 +671,9 @@ class Board extends Component {
         prop={prop}
         animatedMove={this.state.animatedMove}
         afterApear={this.afterApear}
-        //unfreezeCell={this.unfreezeCell}
-        points={this.state.points}
+        afterBounce={this.afterBounce}
+        //afterBlink={this.afterBlink}
+        //points={this.state.points}
         blockMove={this.state.blockMove}
       >
 
@@ -662,44 +686,50 @@ class Board extends Component {
     let points = this.state.points;
 
     let pointAnimation = <View></View>;
-    //let boomAnimations = <View></View>;
+    let gradientCell = <View><Text>{this.state.blinkDirect}</Text></View>;
 
+    if (this.state.blinkCells) {
+      //gradientCell = <View><Text>blinkcells</Text></View>;
 
-/*     if (this.state.boomCells) {
-
-      var partItems = [];
-
-      for (let i = 1; i < 8; i++) {
-        partItems.push({ id: i });
-      }
-
-      boomAnimations = this.state.boomCells.map(cell => {
-
-        var colorCell = 'rgb(' + cell.colors.main.join() + ')'
-        partItems[0].color = colorCell;
-        partItems[1].color = colorCell;
-        partItems[2].color = colorCell;
-        partItems[3].color = 'white';
-
-        var boomCellAnimation = partItems.map(item => {
-          let parts = <Animated.View key={item.id} style={[boomStyle.boomStyle, this.getBoomStyle(item, 600, 700, cell), this.getAnimatedRotateStyle(this.getExplodeRandom(100, 450), 2000)]}>
-          </Animated.View>;
-
-          return parts;
-        });
-
-        return boomCellAnimation;
-
-
+      var blinkAnimation = new Animated.Value(0);
+      Animated.timing(blinkAnimation, {
+        toValue: prop.cellWidth * this.state.blinkCells.length,
+        duration: 1200,
+        easing: Easing.ease
+      }).start(() => {
+        this.afterBlink();
       });
 
-    } */
+
+      const styleBlink =  this.state.blinkDirect == "horizontal"?
+      {
+        left: blinkAnimation,
+        top: this.state.blinkCells[0].top
+      } : 
+      {
+        top: blinkAnimation,
+        left: this.state.blinkCells[0].left
+      }
+
+      var end = this.state.blinkDirect == "horizontal"? { x: 1, y: 0 } : { x: 0, y: 1 };
+
+       gradientCell = <Animated.View style={[styles(prop).blinkView, styleBlink]}>
+        <LinearGradient
+          colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.7)', 'rgba(255, 255, 255, 0.9)']}
+          style={styles(prop).blinkGradient}
+          start={{ x: 0, y: 0 }}
+          end={end}
+          >
+        </LinearGradient>
+      </Animated.View> 
+    }
+  
 
     if (points > 0) {
 
       var pointProp = {
         size: this.getPointSize(),
-        opacity: this.getAnimatedOpacity(1, 0, 750),
+        opacity: this.getAnimatedOpacity(1, 0, 900),
         top: this.state.endCell ? this.getAnimatedTop(this.state.endCell.top, -70, 800) : -1,
         left: this.state.endCell ? this.getAnimatedLeft(this.state.endCell.left, 130, 800) : -1,
         color: this.state.endCell ? 'rgb(' + this.state.endCell.colors.main.join() + ')' : 'white'
@@ -718,6 +748,7 @@ class Board extends Component {
           <View style={styles(prop).board}>
             {tableBody}
             {pointAnimation}
+            {gradientCell}
           </View>
         </View>
       </View>
@@ -761,6 +792,27 @@ const styles = (prop) => StyleSheet.create({
   },
   bar: {
     height: 50,
+  },
+  blinkView: {
+    height: prop.cellHeight,
+    width: prop.cellWidth,
+    zIndex: 100,
+    position: 'absolute',
+    left: 0,
+    borderRadius: 5
+  },
+  blinkGradient: {
+    height: '100%',
+    width: '100%',
+    position: 'relative',
+    borderRadius: 5
+  },
+  gradient: {
+    height: '100%',
+    width: '100%',
+    position: 'absolute',
+    borderRadius: 5,
+
   }
 });
 
