@@ -27,7 +27,7 @@ function prepareMatrixObject(matrix, w, h) {
     let id = 1;
     for (var i = 0; i < matrix.length; i++) {
         for (var j = 0; j < matrix[i].length; j++) {
-            matrixObject[i][j] = { value: 6 /* matrix[i][j] */, i: i, j: j, id: id }
+            matrixObject[i][j] = { value:  matrix[i][j], i: i, j: j, id: id }
             id++;
         }
     }

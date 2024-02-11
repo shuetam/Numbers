@@ -155,13 +155,14 @@ class Cell extends Component {
 
     if (this.props.cell.bounce) {
 
-      var bounceAnimation = new Animated.Value(50);
+      var bounceAnimation = new Animated.Value(40);
       Animated.timing(bounceAnimation, {
-        toValue: 30,
+        toValue:  30,
         duration: 700,
+        useNativeDriver: false,
         easing: Easing.bounce
       }).start(() => {
-        this.props.afterBounce();
+        this.props.cell.bounceBlink? this.props.afterBlink() : this.props.afterBounce();
       });
 
 
@@ -191,7 +192,8 @@ class Cell extends Component {
       var appearAnimation = new Animated.Value(0);
       Animated.timing(appearAnimation, {
         toValue: this.props.prop.cellWidth,
-        duration: 200,
+        duration: 100,
+        useNativeDriver: false,
         easing: Easing.ease
       }).start(() => {
         this.props.afterApear()
@@ -213,38 +215,39 @@ class Cell extends Component {
 
     }
 
-   /*  if (this.props.cell.blink) {
+    if (this.props.cell.blink) {
 
       var blinkAnimation = new Animated.Value(0);
       Animated.timing(blinkAnimation, {
-        toValue: this.props.prop.cellWidth * this.props.cell.blinkCellsCount,
-        duration: 900,
+        toValue: this.props.prop.cellWidth * 0.97 *  this.props.cell.blinkCellsCount,
+        duration: 300,
+        useNativeDriver: false,
         easing: Easing.ease
       }).start(() => {
-        this.props.afterBlink();
+        
       });
 
 
       const styleBlink =  this.props.cell.blinkDirect == "horizontal"?
       {
-        left: blinkAnimation
+        width: blinkAnimation
       } : 
       {
-        top: blinkAnimation
+        height: blinkAnimation
       }
 
       var end = this.props.cell.blinkDirect == "horizontal"? { x: 1, y: 0 } : { x: 0, y: 1 };
 
       gradientCell = <Animated.View style={[styles(this.props).blinkView, styleBlink]}>
         <LinearGradient
-          colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.7)', 'rgba(255, 255, 255, 0.9)']}
+          colors={[ 'rgba(255, 255, 255, 0.1)','rgba(255, 255, 255, 0.2)','rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.7)', 'rgba(255, 255, 255, 0.9)']}
           style={styles(this.props).blinkGradient}
           start={{ x: 0, y: 0 }}
           end={end}
           >
         </LinearGradient>
       </Animated.View>
-    } */
+    } 
 
 
 
@@ -265,6 +268,7 @@ class Cell extends Component {
         {...this.panResponder.panHandlers} >
         <View style={[styles(this.props).innerCell]}>
           {text}
+          {gradientCell}
         </View>
       </View>);
   }
@@ -314,8 +318,8 @@ class Cell extends Component {
 
     var widthEdge = this.props.prop.cellWidth * 0.05; // 10% is a size of cell
     var heightEdge = this.props.prop.cellHeight * 0.05;
-    var widthIn = this.props.prop.cellWidth * 0.3; // - this is a  moment when cells are connected, less make delay connected
-    var heightIn = this.props.prop.cellHeight * 0.3;
+    var widthIn = this.props.prop.cellWidth * 0.7; // - this is a  moment when cells are connected, less make delay connected
+    var heightIn = this.props.prop.cellHeight * 0.7;
 
     switch (direct) {
       case 'SWIPE_RIGHT'://here need to add widthEdge
@@ -497,10 +501,9 @@ const styles = (props) => StyleSheet.create({
 
   blinkView: {
     height: '100%',
-    width: props.prop.cellWidth,
-    zIndex: 100,
+    width: '100%',
+    zIndex: 200,
     position: 'absolute',
-    left: 0,
     borderRadius: 5
   },
   blinkGradient: {

@@ -34,7 +34,7 @@ class Board extends Component {
       restart: true,
       colors: [],
       scores: 0,
-      nextValue: Math.floor(Math.random() * (9 - 1 + 1) + 1)
+      nextValue: Math.floor(Math.random() * (9 - 1 + 1) + 1),
     }
   }
 
@@ -180,7 +180,23 @@ class Board extends Component {
 
 
   afterBlink = () => {
-    this.setState({ blinkCells: false, blinkDirect: "afterBlink" });
+    var updateMatrix = this.state.matrix;
+    for (var i = 0; i < updateMatrix.length; i++) {
+      for (var j = 0; j < updateMatrix[i].length; j++) {
+        updateMatrix[i][j].blink = false;
+        updateMatrix[i][j].bounce = false;
+        updateMatrix[i][j].bounceBlink = false;
+      }
+    }
+
+    var blinkCells = this.state.blinkCells;
+    if (blinkCells) {
+      for (var k = 0; k < blinkCells.length; k++) {
+        blinkCells[k].value = 0;
+        blinkCells[k].colors = getCellColor(0, 0, 0);
+      }
+      this.setState({ blockMove: false, restart: !this.state.restart });
+    }
   }
 
   afterBounce = () => {
@@ -189,7 +205,8 @@ class Board extends Component {
     for (var i = 0; i < updateMatrix.length; i++) {
       for (var j = 0; j < updateMatrix[i].length; j++) {
 
-          updateMatrix[i][j].bounce = false;
+        updateMatrix[i][j].bounce = false;
+        updateMatrix[i][j].bounceBlink = false;
 
         if (updateMatrix[i][j].value == 0) {
           updateMatrix[i][j].colors = getCellColor(0, 0, 0);
@@ -450,16 +467,18 @@ class Board extends Component {
 
   updateScores = () => {
     var updateMatrix = this.state.matrix;
-    
+
     var blinkCells = this.checkRowAndColumn(updateMatrix);
     //blinkCells.blinkCells[0].bounce = true;
-    this.setState({ scores: this.state.scores + this.state.points, 
-      matrix: updateMatrix, 
+    this.setState({
+      scores: this.state.scores + this.state.points,
+      matrix: updateMatrix,
       blinkCells: blinkCells.blinkCells,
       blinkDirect: blinkCells.direct,
       restart: !this.state.restart,
       blockMove: false,
-      points: 0 });
+      points: 0
+    });
 
   }
 
@@ -474,11 +493,13 @@ class Board extends Component {
         updateMatrix[i][j].appear = false;
       }
     }
-    this.setState({ blockMove: false, 
-      matrix: updateMatrix, 
-      blinkCells: blinkCells.blinkCells, 
+    this.setState({
+      blockMove: false,
+      matrix: updateMatrix,
+      blinkCells: blinkCells.blinkCells,
       blinkDirect: blinkCells.direct,
-      restart: !this.state.restart });
+      restart: !this.state.restart
+    });
   }
 
   updateValues = () => {
@@ -553,11 +574,12 @@ class Board extends Component {
             }))
           }
         }
-
       }
     }
 
+
     this.setState({
+      pointOpacity: this.getAnimatedOpacity(1, 0, 900),
       blockMove: anyCellAnimation,
       matrix: updateMatrix, restart: !this.state.restart, points: points,
       nextValue: updateRandom ? Math.floor(Math.random() * (9 - 1 + 1) + 1) : this.state.nextValue
@@ -581,36 +603,45 @@ class Board extends Component {
           for (var j = 0; j < updateMatrix[i].length; j++) {
             //updateMatrix[i][j].value = 0;
             //updateMatrix[i][j].frozenValue = 0;
-            //updateMatrix[i][j].bounce = true;
-            
+            updateMatrix[i][j].bounce = true;
+            updateMatrix[i][j].bounceBlink = true;
+            //updateMatrix[i][j].blinkDirect = direct;
+
             blinkCells.push(updateMatrix[i][j]);
           }
         }
       }
     }
-    
+
     for (var i = 0; i < updateMatrix[0].length; i++) {
-      
+
       const column = [];
-      
+
       for (var j = 0; j < updateMatrix.length; j++) {
         column.push(updateMatrix[j][i]);
       }
-      
+
       if (column.every((x) => x.value < 0)) {
-        
+
         var frozenValues = column.map((x) => x.frozenValue);
-        
+
         if (frozenValues.every((v) => frozenValues[0] == v)) {
           direct = "vertical";
           for (var k = 0; k < column.length; k++) {
             //column[k].value = 0;
-            //column[k].frozenValue = 0;
-            //column[k].bounce = true;
+            //column[k].blinkDirect = direct;
+            column[k].bounce = true;
+            column[k].bounceBlink = true;
             blinkCells.push(column[k]);
           }
         }
       }
+    }
+
+    if (blinkCells.length > 0) {
+      blinkCells[0].blink = true;
+      blinkCells[0].blinkDirect = direct;
+      blinkCells[0].blinkCellsCount = blinkCells.length;
     }
     return blinkCells.length > 0 ? { blinkCells: blinkCells, direct: direct } : false;
   }
@@ -672,7 +703,7 @@ class Board extends Component {
         animatedMove={this.state.animatedMove}
         afterApear={this.afterApear}
         afterBounce={this.afterBounce}
-        //afterBlink={this.afterBlink}
+        afterBlink={this.afterBlink}
         //points={this.state.points}
         blockMove={this.state.blockMove}
       >
@@ -688,48 +719,48 @@ class Board extends Component {
     let pointAnimation = <View></View>;
     let gradientCell = <View><Text>{this.state.blinkDirect}</Text></View>;
 
-    if (this.state.blinkCells) {
-      //gradientCell = <View><Text>blinkcells</Text></View>;
-
-      var blinkAnimation = new Animated.Value(0);
-      Animated.timing(blinkAnimation, {
-        toValue: prop.cellWidth * this.state.blinkCells.length,
-        duration: 1200,
-        easing: Easing.ease
-      }).start(() => {
-        this.afterBlink();
-      });
-
-
-      const styleBlink =  this.state.blinkDirect == "horizontal"?
-      {
-        left: blinkAnimation,
-        top: this.state.blinkCells[0].top
-      } : 
-      {
-        top: blinkAnimation,
-        left: this.state.blinkCells[0].left
-      }
-
-      var end = this.state.blinkDirect == "horizontal"? { x: 1, y: 0 } : { x: 0, y: 1 };
-
-       gradientCell = <Animated.View style={[styles(prop).blinkView, styleBlink]}>
-        <LinearGradient
-          colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.7)', 'rgba(255, 255, 255, 0.9)']}
-          style={styles(prop).blinkGradient}
-          start={{ x: 0, y: 0 }}
-          end={end}
-          >
-        </LinearGradient>
-      </Animated.View> 
-    }
+    /*   if (this.state.blinkCells333) {
+        //gradientCell = <View><Text>blinkcells</Text></View>;
   
+        var blinkAnimation = new Animated.Value(0);
+        Animated.timing(blinkAnimation, {
+          toValue: prop.cellWidth * 4,//this.state.blinkCells.length,
+          duration: 1200,
+          easing: Easing.ease
+        }).start(() => {
+          this.afterBlink();
+        });
+  
+  
+        const styleBlink =  this.state.blinkDirect == "horizontal"?
+        {
+          left: blinkAnimation,
+          top: this.state.blinkCells[0].top
+        } : 
+        {
+          top: blinkAnimation,
+          left: this.state.blinkCells[0].left
+        }
+  
+        var end = this.state.blinkDirect == "horizontal"? { x: 1, y: 0 } : { x: 0, y: 1 };
+  
+         gradientCell = <Animated.View style={[styles(prop).blinkView, styleBlink]}>
+          <LinearGradient
+            colors={['rgba(255, 255, 255, 0.2)', 'rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.5)', 'rgba(255, 255, 255, 0.7)', 'rgba(255, 255, 255, 0.9)']}
+            style={styles(prop).blinkGradient}
+            start={{ x: 0, y: 0 }}
+            end={end}
+            >
+          </LinearGradient>
+        </Animated.View> 
+      } */
+
 
     if (points > 0) {
 
       var pointProp = {
         size: this.getPointSize(),
-        opacity: this.getAnimatedOpacity(1, 0, 900),
+        opacity: this.state.pointOpacity,
         top: this.state.endCell ? this.getAnimatedTop(this.state.endCell.top, -70, 800) : -1,
         left: this.state.endCell ? this.getAnimatedLeft(this.state.endCell.left, 130, 800) : -1,
         color: this.state.endCell ? 'rgb(' + this.state.endCell.colors.main.join() + ')' : 'white'
@@ -748,7 +779,7 @@ class Board extends Component {
           <View style={styles(prop).board}>
             {tableBody}
             {pointAnimation}
-            {gradientCell}
+
           </View>
         </View>
       </View>

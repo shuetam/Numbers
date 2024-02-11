@@ -5,7 +5,12 @@
     "version": "1.0.0",
     "assetBundlePatterns": [
       "**/*"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "a2218a38-1dde-48de-88ba-27642669586e"
+      }
+    }
   },
   "name": "Numbers"
 }
