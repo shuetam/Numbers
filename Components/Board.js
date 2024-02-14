@@ -47,7 +47,13 @@ class Board extends Component {
 
   restartBoard = () => {
 
-    this.setState({ blockMove: false, matrix: this.generateMatrix(), points: 0, scores: 0, nextValue: Math.floor(Math.random() * (9 - 1 + 1) + 1) });
+    this.setState({
+      blockMove: false, matrix: this.generateMatrix(),
+      points: 0,
+      scores: 0,
+      //blinkCells: [],
+      nextValue: Math.floor(Math.random() * (9 - 1 + 1) + 1)
+    });
 
   }
 
@@ -178,42 +184,87 @@ class Board extends Component {
      this.setState({ restart: !this.state.restart });
    } */
 
+  afterApear = () => {
 
-  afterBlink = () => {
+    //this function is update after apear new cell. When restart state is created another render comes
+    var updateMatrix = this.state.matrix;
+    //var blinkCells = this.checkRowAndColumn(updateMatrix);
+
+    for (var i = 0; i < updateMatrix.length; i++) {
+      for (var j = 0; j < updateMatrix[i].length; j++) {
+        updateMatrix[i][j].appear = false;
+      }
+    }
+    this.setState({
+      blockMove: false,
+      matrix: updateMatrix,
+      //blinkCells: blinkCells,
+      //blinkDirect: blinkCells.direct,
+      restart: !this.state.restart
+    });
+  }
+
+  /*   afterBlink = () => {
+  
+      //alert("after BLINK");
+  
+      var updateMatrix = this.state.matrix;
+      for (var i = 0; i < updateMatrix.length; i++) {
+        for (var j = 0; j < updateMatrix[i].length; j++) {
+          updateMatrix[i][j].blink = false;
+          updateMatrix[i][j].bounce = false;
+          updateMatrix[i][j].bounceBlink = false;
+        }
+      }
+  
+      var blinkCells = this.state.blinkCells;
+      if (blinkCells) {
+        for (var k = 0; k < blinkCells.length; k++) {
+          blinkCells[k].value = 0;
+          blinkCells[k].colors = getCellColor(0, 0, 0);
+        }
+        this.setState({ 
+          blockMove: false, 
+          matrix: updateMatrix,
+          blinkCells: [],
+          blinkDirect: "",
+          restart: !this.state.restart
+          });
+      }
+    } */
+
+  afterExplode = () => {
+    //alert("explode");
     var updateMatrix = this.state.matrix;
     for (var i = 0; i < updateMatrix.length; i++) {
       for (var j = 0; j < updateMatrix[i].length; j++) {
-        updateMatrix[i][j].blink = false;
-        updateMatrix[i][j].bounce = false;
-        updateMatrix[i][j].bounceBlink = false;
+        updateMatrix[i][j].explode = false;
       }
     }
 
-    var blinkCells = this.state.blinkCells;
-    if (blinkCells) {
-      for (var k = 0; k < blinkCells.length; k++) {
-        blinkCells[k].value = 0;
-        blinkCells[k].colors = getCellColor(0, 0, 0);
-      }
-      this.setState({ blockMove: false, restart: !this.state.restart });
-    }
+    this.setState({
+      blockMove: false,
+      matrix: updateMatrix,
+      restart: !this.state.restart
+    });
   }
 
   afterBounce = () => {
     var updateMatrix = this.state.matrix;
+    //var blinkCells = this.checkRowAndColumn(updateMatrix);
 
     for (var i = 0; i < updateMatrix.length; i++) {
       for (var j = 0; j < updateMatrix[i].length; j++) {
-
         updateMatrix[i][j].bounce = false;
-        updateMatrix[i][j].bounceBlink = false;
-
-        if (updateMatrix[i][j].value == 0) {
-          updateMatrix[i][j].colors = getCellColor(0, 0, 0);
-        }
       }
     }
-    this.setState({ blockMove: false, restart: !this.state.restart, matrix: updateMatrix });
+    this.setState({
+      blockMove: false,
+      matrix: updateMatrix,
+      //blinkCells: blinkCells,
+      //blinkDirect: blinkCells.direct,
+      restart: !this.state.restart
+    });
   }
 
   updateBoard = (direct, startCell, endCell, gestureState, speed) => {
@@ -287,7 +338,8 @@ class Board extends Component {
       animatedMove: animatedMove,
       colors1: startCell.colors,
       colors2: endCell.colors,
-      points: 0
+      points: 0,
+      //blinkCells: []
     });
 
   }
@@ -345,21 +397,21 @@ class Board extends Component {
     } */
 
 
-  getPointSize = () => {
-
-    var animatedPoint = new Animated.Value(45);
-
-    Animated.timing(animatedPoint, {
-      toValue: 35,
-      useNativeDriver: false,
-      duration: 400,
-    })
-      .start(() => {
-
-      });
-
-    return animatedPoint;
-  }
+  /*  getPointSize = () => {
+ 
+     var animatedPoint = new Animated.Value(25);
+ 
+     Animated.timing(animatedPoint, {
+       toValue: 35,
+       useNativeDriver: false,
+       duration: 600,
+     })
+       .start(() => {
+ 
+       });
+ 
+     return animatedPoint;
+   } */
 
 
   getAnimatedTop = (startValue, endValue, duration) => {
@@ -367,7 +419,7 @@ class Board extends Component {
     var animatedPoint = new Animated.Value(startValue);
 
     Animated.timing(animatedPoint, {
-      toValue: endValue,
+      toValue: startValue - 40,//endValue,
       useNativeDriver: false,
       duration: duration,
     })
@@ -414,7 +466,7 @@ class Board extends Component {
     var animatedPoint = new Animated.Value(startValue);
 
     Animated.timing(animatedPoint, {
-      toValue: endValue,
+      toValue: startValue,//endValue,
       useNativeDriver: false,
       duration: duration,
     })
@@ -425,7 +477,7 @@ class Board extends Component {
     return animatedPoint;
   }
 
-  getAnimatedOpacity = (startValue, endValue, duration) => {
+  afterPointAnimation = (startValue, endValue, duration) => {
 
     var animatedPoint = new Animated.Value(startValue);
 
@@ -468,40 +520,21 @@ class Board extends Component {
   updateScores = () => {
     var updateMatrix = this.state.matrix;
 
-    var blinkCells = this.checkRowAndColumn(updateMatrix);
-    //blinkCells.blinkCells[0].bounce = true;
     this.setState({
       scores: this.state.scores + this.state.points,
       matrix: updateMatrix,
-      blinkCells: blinkCells.blinkCells,
-      blinkDirect: blinkCells.direct,
+      //blinkCells: blinkCells.blinkCells,
+      //blinkDirect: blinkCells.direct,
       restart: !this.state.restart,
       blockMove: false,
-      points: 0
+      points: 0,
+      blinkCells: []
     });
 
   }
 
-  afterApear = () => {
 
-    //this function is update after apear new cell. When restart state is created another render comes
-    var updateMatrix = this.state.matrix;
-    var blinkCells = this.checkRowAndColumn(updateMatrix);
-
-    for (var i = 0; i < updateMatrix.length; i++) {
-      for (var j = 0; j < updateMatrix[i].length; j++) {
-        updateMatrix[i][j].appear = false;
-      }
-    }
-    this.setState({
-      blockMove: false,
-      matrix: updateMatrix,
-      blinkCells: blinkCells.blinkCells,
-      blinkDirect: blinkCells.direct,
-      restart: !this.state.restart
-    });
-  }
-
+  //most important function, all values in matrix should be updated here
   updateValues = () => {
 
     var startCell = this.state.startCell;
@@ -577,11 +610,17 @@ class Board extends Component {
       }
     }
 
+    var blinkCells = this.checkRowAndColumn(updateMatrix);
+
+    points = points + blinkCells.length;
 
     this.setState({
-      pointOpacity: this.getAnimatedOpacity(1, 0, 900),
+      //pointOpacity: this.getAnimatedOpacity(1, 0, 600),
       blockMove: anyCellAnimation,
-      matrix: updateMatrix, restart: !this.state.restart, points: points,
+      matrix: updateMatrix,
+      restart: !this.state.restart,
+      points: points,
+      blinkCells: blinkCells,
       nextValue: updateRandom ? Math.floor(Math.random() * (9 - 1 + 1) + 1) : this.state.nextValue
     });
 
@@ -590,7 +629,7 @@ class Board extends Component {
   checkRowAndColumn(updateMatrix) {
 
     var blinkCells = [];
-    var direct = "";
+    //var direct = "";
 
     for (var i = 0; i < updateMatrix.length; i++) {
 
@@ -599,14 +638,14 @@ class Board extends Component {
         var frozenValues = updateMatrix[i].map((x) => x.frozenValue);
 
         if (frozenValues.every((v) => frozenValues[0] == v)) {
-          direct = "horizontal";
+          //direct = "horizontal";
           for (var j = 0; j < updateMatrix[i].length; j++) {
-            //updateMatrix[i][j].value = 0;
-            //updateMatrix[i][j].frozenValue = 0;
-            updateMatrix[i][j].bounce = true;
-            updateMatrix[i][j].bounceBlink = true;
-            //updateMatrix[i][j].blinkDirect = direct;
 
+            updateMatrix[i][j].value = 0;
+            updateMatrix[i][j].frozenValue = 0;
+            updateMatrix[i][j].colors = getCellColor(0, 0, 0);
+
+            //updateMatrix[i][j].explode = true;
             blinkCells.push(updateMatrix[i][j]);
           }
         }
@@ -626,29 +665,30 @@ class Board extends Component {
         var frozenValues = column.map((x) => x.frozenValue);
 
         if (frozenValues.every((v) => frozenValues[0] == v)) {
-          direct = "vertical";
+          //direct = "vertical";
           for (var k = 0; k < column.length; k++) {
-            //column[k].value = 0;
-            //column[k].blinkDirect = direct;
-            column[k].bounce = true;
-            column[k].bounceBlink = true;
+            column[k].value = 0;
+            column[k].frozenValue = 0;
+            column[k].colors = getCellColor(0, 0, 0);
+
+            //column[k].explode = true;
             blinkCells.push(column[k]);
           }
         }
       }
     }
 
-    if (blinkCells.length > 0) {
-      blinkCells[0].blink = true;
-      blinkCells[0].blinkDirect = direct;
-      blinkCells[0].blinkCellsCount = blinkCells.length;
-    }
-    return blinkCells.length > 0 ? { blinkCells: blinkCells, direct: direct } : false;
+    /*     if (blinkCells.length > 0) {
+          blinkCells[0].blink = true;
+          blinkCells[0].blinkDirect = direct;
+          blinkCells[0].blinkCellsCount = blinkCells.length;
+        } */
+    return blinkCells;
   }
 
-  getExplodeRandom = (min, max) => {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
+  /*   getExplodeRandom = (min, max) => {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    } */
 
 
   render() {
@@ -701,9 +741,9 @@ class Board extends Component {
         onMove={this.onMove}
         prop={prop}
         animatedMove={this.state.animatedMove}
-        afterApear={this.afterApear}
         afterBounce={this.afterBounce}
-        afterBlink={this.afterBlink}
+        afterApear={this.afterApear}
+        afterExplode={this.afterExplode}
         //points={this.state.points}
         blockMove={this.state.blockMove}
       >
@@ -714,10 +754,13 @@ class Board extends Component {
 
     });
 
-    let points = this.state.points;
 
-    let pointAnimation = <View></View>;
-    let gradientCell = <View><Text>{this.state.blinkDirect}</Text></View>;
+
+
+
+
+
+    //let gradientCell = <View><Text>{this.state.blinkDirect}</Text></View>;
 
     /*   if (this.state.blinkCells333) {
         //gradientCell = <View><Text>blinkcells</Text></View>;
@@ -754,20 +797,38 @@ class Board extends Component {
           </LinearGradient>
         </Animated.View> 
       } */
-
+      var points = this.state.points;
+    let pointAnimations = [<View></View>];
 
     if (points > 0) {
 
-      var pointProp = {
-        size: this.getPointSize(),
-        opacity: this.state.pointOpacity,
-        top: this.state.endCell ? this.getAnimatedTop(this.state.endCell.top, -70, 800) : -1,
-        left: this.state.endCell ? this.getAnimatedLeft(this.state.endCell.left, 130, 800) : -1,
-        color: this.state.endCell ? 'rgb(' + this.state.endCell.colors.main.join() + ')' : 'white'
+      let pointsCells = [];
+
+      if (points == 1) {
+        pointsCells.push(this.state.endCell);
+      }
+      else if (this.state.blinkCells) {
+        pointsCells = this.state.blinkCells;
+        
       }
 
-      pointAnimation = <Animated.Text style={[pointStyle(pointProp).pointStyle]}>+{points}</Animated.Text>;
+      let offset = prop.cellHeight / 5;
+      let opacity = this.afterPointAnimation(1, 0, 600);
 
+      for (var i = 0; i < pointsCells.length; i++) {
+
+        var cellPoint = pointsCells[i]
+
+        var pointProp = {
+          size: 35,//this.getPointSize(),
+          opacity: opacity,
+          top: this.getAnimatedTop(cellPoint.top, -70, 200),
+          left: cellPoint.left + offset,//this.getAnimatedLeft(cellPoint.left + offset, 130, 100),
+          color: points == 1? 'rgb(' + cellPoint.colors.main.join() + ')' : 'white'
+        }
+        var pointView = <Animated.Text style={[pointStyle(pointProp).pointStyle]}>+1</Animated.Text>;
+        pointAnimations.push(pointView);
+      }
     }
 
 
@@ -778,8 +839,7 @@ class Board extends Component {
         <View style={styles(prop).boardPanel}>
           <View style={styles(prop).board}>
             {tableBody}
-            {pointAnimation}
-
+            {pointAnimations}
           </View>
         </View>
       </View>
@@ -855,18 +915,11 @@ const pointStyle = (prop) => StyleSheet.create({
     position: 'absolute',
     color: prop.color,
     opacity: prop.opacity,
+    fontWeight: 'bold',
     top: prop.top,// this.state.endCell ? this.getPointTop() : -1,
     left: prop.left,// this.state.endCell ? this.getPointLeft() : -1,
   }
 });
 
-const boomStyle = StyleSheet.create({
-
-  boomStyle: {
-    backgroundColor: "transparent",
-    position: "absolute",
-    borderStyle: "solid"
-  }
-});
 
 

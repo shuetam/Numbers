@@ -155,14 +155,14 @@ class Cell extends Component {
 
     if (this.props.cell.bounce) {
 
-      var bounceAnimation = new Animated.Value(40);
+      var bounceAnimation = new Animated.Value(47);
       Animated.timing(bounceAnimation, {
-        toValue:  30,
+        toValue:  33,
         duration: 700,
         useNativeDriver: false,
         easing: Easing.bounce
       }).start(() => {
-        this.props.cell.bounceBlink? this.props.afterBlink() : this.props.afterBounce();
+         this.props.afterBounce();
       });
 
 
@@ -170,11 +170,7 @@ class Cell extends Component {
         fontSize: bounceAnimation,
       }
 
-      const styleColor = {
-        //borderWidth: 0
-      }
-
-      text = <View style={[styles(this.props).innerinCell, styleColor]}>
+      text = <View style={[styles(this.props).innerinCell]}>
         <Animated.Text nativeID={this.props.cell.id + ''} style={[styles(this.props).innerText, styleBounce]} >{content}</Animated.Text>
         {/* <Animated.View style={styleShine}></Animated.View> */}
       </View>
@@ -215,7 +211,37 @@ class Cell extends Component {
 
     }
 
-    if (this.props.cell.blink) {
+
+   /*  if (this.props.cell.explode) {
+
+      var appearAnimation = new Animated.Value(0);
+      Animated.timing(appearAnimation, {
+        toValue: this.props.prop.cellWidth,
+        duration: 100,
+        useNativeDriver: false,
+        easing: Easing.ease
+      }).start(() => {
+        this.props.afterExplode()
+      });
+
+      const styleAppear = {
+        width: appearAnimation,
+        height: appearAnimation
+      }
+
+      return (<View
+        onTouchStart={this.startTouch}
+        nativeID={this.props.cell.id + ''} style={[styles(this.props).cell, style]}
+        {...this.panResponder.panHandlers} >
+        <Animated.View style={[styles(this.props).innerCell, styleAppear]}>
+          {text}
+        </Animated.View>
+      </View>);
+
+    }
+ */
+
+   /*  if (this.props.cell.blink) {
 
       var blinkAnimation = new Animated.Value(0);
       Animated.timing(blinkAnimation, {
@@ -247,7 +273,7 @@ class Cell extends Component {
           >
         </LinearGradient>
       </Animated.View>
-    } 
+    }  */
 
 
 
@@ -521,7 +547,7 @@ const styles = (props) => StyleSheet.create({
   },
 
   innerText: {
-    fontSize: 30,
+    fontSize: 33,
     color: props.cell.value == -1 ? 'rgb(' + props.cell.colors.main.join() + ')' : 'rgba(225, 225, 225, 1)',
     zIndex: 60
     //fontFamily: 'Robot', 
